@@ -1,201 +1,3 @@
-
-Claude is responding
-
-index.html
-html
-
-/algorithmic-art
- 
-
-Can we make sure the nesting happens at the center/aligned with the circled shapes.
-and expand the glow rings parameters
-
-
-Decoded existing artifact and identified necessary modifications
-Decoded existing artifact and identified necessary modifications
-Good, extracted cleanly. Now let me look at the actual algorithm code to understand the nesting logic and glow rings parameters.
-
-
-Viewed 5 files, ran 2 commands
-Viewed 5 files, ran 2 commands
-Now let's make all the edits.
-
-
-Edited 2 files, ran 2 commands
-Edited 2 files, ran 2 commands
-Now let's retry the edits.
-
-
-Expand glow rings sliders and add a new Glow Layers control
-Expand glow rings sliders and add a new Glow Layers control
-Now update the JS params, ranges, and helper arrays:
-
-
-Edited 3 files
-Edited 3 files
-Now update drawGlowHalo to use the new glowSteps param instead of the hardcoded value:
-
-
-Make glow halo layer count a tunable parameter
-Make glow halo layer count a tunable parameter
-Now update the updateParam lightweight list, and resetParameters:
-
-
-Edited 2 files
-Edited 2 files
-Now the nesting fix — center children on their parent so they align with the parent's concentric rings:
-
-
-Ran 2 commands, edited a file
-Ran 2 commands, edited a file
-Syntax checks out. Now let's copy the final file to outputs and present it.
-
-
-Ran a command, read a file
-Ran a command, read a file
-Two changes made:
-
-Nesting, centered on parent — nested satellites previously drifted to a random offset inside their parent, so they read as separate blobs. Now every nested child is planted at the exact same center point as its parent, with distinct radii sorted largest-to-smallest, so the child's own ring set stacks as a true concentric continuation of the parent's rings rather than an off-axis shape.
-
-Glow rings, expanded
-
-Glow Rings (chance): range widened from 0–0.6 to 0–1
-Glow Intensity: range widened from 0–12 to 0–30
-Glow Layers (new): a control that used to be a hardcoded value of 3 halo passes is now a slider from 1–8, so you can go from a tight single glow ring to a much softer, deeper bloom
-Both new params are cycle-able (🎲 randomize, ⟲ toggle animation) just like the rest of the sidebar controls, and reset/defaults are wired up correctly.
-
-
-Concentric bloom
-Code · HTML 
-are we working with actual vectors or pixels?
-Can we add the ability to download the artwork as vectors?
-
-
-Ran 2 commands, viewed 2 files
-Ran 2 commands, viewed 2 files
-Now let's add a "Download SVG" button and implement the full vector-export function:
-
-
-Edited a file, ran a command, viewed a file
-Edited a file, ran a command, viewed a file
-Good — flexbox with flex:1 handles three buttons fine. Now let's implement downloadSVG() and a supporting SVG builder, placed right after downloadArt():
-
-
-Architected vector export functionality for artwork downloads
-Architected vector export functionality for artwork downloads
-Good, forms and renderPalette are top-level script globals, accessible from the new functions. Let's re-check syntax and finalize:
-
-
-Re-check JS syntax validity after SVG export additions
-Re-check JS syntax validity after SVG export additions
-Now let's do a quick headless render smoke test to make sure nothing crashes at runtime (not just syntax), then ship the file.
-
-
-Check for headless browser tooling availability
-Check for headless browser tooling availability
-Playwright's available — let's actually load the page and click Download SVG to validate it works end-to-end.
-
-
-Diagnosed library loading failure and pivoted toward logic validation
-Diagnosed library loading failure and pivoted toward logic validation
-The SVG builder logic works correctly with proper geometry, gradients, and opacity. This confirms the export function is sound — the earlier empty download was just the sandbox's network being blocked (p5.js CDN 403'd), not a bug in the code. Let's finalize and ship.
-
-
-Ran a command, read a file
-Ran a command, read a file
-Pixels, currently. Everything renders through a p5.js canvas — a raster buffer — and the only export was sceneBuffer.save(...) as a PNG.
-
-But the underlying shapes were already pure vector geometry — every ring is just a circle, a stroke, or a radial gradient computed from math (forms[].rings[]), with no noise textures or blend-mode tricks baked in. So instead of pulling in an external SVG renderer library, I wrote a direct SVG exporter that walks the same forms/rings data the canvas uses and re-emits it as real SVG elements, in the identical draw order:
-
-filled rings → <circle> with fill
-outline rings → <circle> with stroke
-gradient rings → <radialGradient> in <defs> + an evenodd <path> annulus
-glow halos → the same translucent wide-stroke circles, just as vector strokes instead of rasterized ones
-There's now a ⬇ SVG button next to the PNG one in Actions. It builds the file client-side as a Blob and triggers a download — fully self-contained, no new dependencies. I validated the builder logic against mock ring data to confirm the markup, opacities, and gradient stops come out correct.
-
-One caveat worth knowing: SVG doesn't have a native "cheap raster blur," so the glow is reproduced exactly as the canvas does it — a few stacked translucent strokes — rather than a soft Gaussian blur. Visually it should match what you see on screen very closely, since that's the same technique the canvas already uses.
-
-
-Concentric bloom
-Code · HTML 
-perfect. Can we rethink the UI, clean up the style and make it more modern brutalist. Light theme. Change the menu to the right or make it a floating menu
-
-
-Architected CSS restructuring and layout repositioning for modernized interface
-Architected CSS restructuring and layout repositioning for modernized interface
-Now the full CSS rewrite. Let me view the exact current block boundaries once more before replacing:
-
-
-Re-viewing style block start/end after font link insertion
-Re-viewing style block start/end after font link insertion
-Now let's replace the entire CSS block (from /* Neutral Theme */ through the closing </style>):
-
-
-Ran 3 commands
-Ran 3 commands
-Good. Now let's write the new brutalist CSS to a file:
-
-
-New brutalist light-theme CSS for the generative art tool
-New brutalist light-theme CSS for the generative art tool
-Now let's splice it into the file, replacing lines 12–488:
-
-
-Splice new CSS into the file in place of the old style block
-Splice new CSS into the file in place of the old style block
-Now let's restructure the HTML body markup — wrap canvas in .stage, add the floating panel head, and add the collapse toggle button:
-
-
-Viewed a file, edited a file
-Viewed a file, edited a file
-Now the closing structure — where .container closed and .canvas-area used to sit:
-
-
-Ran a command, viewed a file, edited a file
-Ran a command, viewed a file, edited a file
-Now let's add the togglePanel() JS function. Let's find a good insertion point near other UI handlers:
-
-
-Ran a command, viewed a file, edited a file
-Ran a command, viewed a file, edited a file
-Now let's verify JS syntax and check the media query breakpoint value referenced in the old responsive CSS doesn't linger elsewhere, then do a headless visual smoke test.
-
-
-Verify JS syntax and rough div balance after restructuring
-Verify JS syntax and rough div balance after restructuring
-Div counts balance and JS is valid. Now let's do a visual check with a local copy of p5.js to work around the sandboxed network:
-
-
-Devised visual verification strategy despite network constraints
-Devised visual verification strategy despite network constraints
-No page errors. Let's look at the screenshots:
-
-
-Verified layout functionality and examined panel rendering details
-Verified layout functionality and examined panel rendering details
-This all looks solid — numbered section tags, blocky Unbounded headers, mono UI type, hard-edged buttons and swatches, offset shadows, dual-slider fills all reading clearly. Let's ship it.
-
-
-Ran a command, read a file
-Ran a command, read a file
-Went with a floating panel rather than just moving the sidebar to the right — it now sits detached above the canvas instead of pushing it, so the artwork stays full-bleed and centered no matter what state the panel's in.
-
-The brutalist pass:
-
-Palette: stone off-white (
-#efeee8) page with a faint 32px blueprint grid, a pure-white panel, near-black ink, and two hard accents — signal red for primary actions, electric blue for cycling/dual-range fills. No gradients, no glass, no blur.
-Type: 'Unbounded' (a chunky geometric display face) for the wordmark and section
-
-Concentric bloom
-Code · HTML 
-
-
-
-
-Claude is AI and can make mistakes. Please double-check responses.
-
-
-Concentric bloom · HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -225,18 +27,18 @@ Concentric bloom · HTML
             --accent-2: #0033ff;
             --grid-line: rgba(17, 17, 17, 0.07);
         }
- 
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
- 
+
         html, body {
             height: 100%;
             overflow: hidden;
         }
- 
+
         body {
             font-family: 'JetBrains Mono', 'SF Mono', monospace;
             background:
@@ -245,14 +47,14 @@ Concentric bloom · HTML
                 var(--bg);
             color: var(--ink);
         }
- 
+
         /* Full-bleed canvas host - the panel floats above this, it never
            pushes or resizes it */
         .stage {
             position: fixed;
             inset: 0;
         }
- 
+
         .canvas-area {
             width: 100%;
             height: 100%;
@@ -261,7 +63,7 @@ Concentric bloom · HTML
             justify-content: center;
             padding: 28px;
         }
- 
+
         #canvas-container {
             width: 100%;
             height: 100%;
@@ -273,7 +75,7 @@ Concentric bloom · HTML
             border: 3px solid var(--line);
             box-shadow: 10px 10px 0 var(--ink);
         }
- 
+
         #canvas-container canvas {
             display: block;
             max-width: 100%;
@@ -281,7 +83,7 @@ Concentric bloom · HTML
             width: auto !important;
             height: auto !important;
         }
- 
+
         .loading {
             display: flex;
             align-items: center;
@@ -291,7 +93,7 @@ Concentric bloom · HTML
             text-transform: uppercase;
             color: var(--ink-soft);
         }
- 
+
         /* ─── Floating panel tab (collapsed state trigger) ─────────────── */
         .panel-tab {
             position: fixed;
@@ -313,21 +115,21 @@ Concentric bloom · HTML
             align-items: center;
             justify-content: center;
         }
- 
+
         .panel-tab.showing {
             display: flex;
         }
- 
+
         .panel-tab:hover {
             transform: translate(-2px, -2px);
             box-shadow: 7px 7px 0 var(--accent);
         }
- 
+
         .panel-tab:active {
             transform: translate(0, 0);
             box-shadow: 2px 2px 0 var(--accent);
         }
- 
+
         /* ─── Floating control panel ─────────────────────────────────── */
         .sidebar {
             position: fixed;
@@ -344,26 +146,26 @@ Concentric bloom · HTML
             counter-reset: section;
             transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.18s ease;
         }
- 
+
         .sidebar.collapsed {
             transform: translateX(calc(100% + 48px));
             opacity: 0;
             pointer-events: none;
         }
- 
+
         .sidebar::-webkit-scrollbar {
             width: 10px;
         }
- 
+
         .sidebar::-webkit-scrollbar-track {
             background: var(--panel);
             border-left: 1px solid var(--grid-line);
         }
- 
+
         .sidebar::-webkit-scrollbar-thumb {
             background: var(--ink);
         }
- 
+
         .panel-head {
             position: sticky;
             top: 0;
@@ -377,7 +179,7 @@ Concentric bloom · HTML
             padding: 16px 16px;
             border-bottom: 3px solid var(--line);
         }
- 
+
         .wordmark {
             font-family: 'Unbounded', sans-serif;
             font-weight: 700;
@@ -386,12 +188,12 @@ Concentric bloom · HTML
             letter-spacing: -0.01em;
             text-transform: uppercase;
         }
- 
+
         .wordmark span {
             display: block;
             color: var(--accent);
         }
- 
+
         .panel-close {
             flex-shrink: 0;
             width: 30px;
@@ -404,13 +206,13 @@ Concentric bloom · HTML
             cursor: pointer;
             transition: background 0.12s ease, color 0.12s ease;
         }
- 
+
         .panel-close:hover {
             background: var(--accent);
             border-color: var(--accent);
             color: var(--ink);
         }
- 
+
         /* ─── Control Sections ──────────────────────────────────────── */
         .control-section {
             counter-increment: section;
@@ -418,11 +220,11 @@ Concentric bloom · HTML
             padding: 18px 16px;
             border-bottom: 2px solid var(--line);
         }
- 
+
         .control-section:last-child {
             border-bottom: none;
         }
- 
+
         .control-section h3 {
             font-family: 'Unbounded', sans-serif;
             font-size: 12px;
@@ -435,7 +237,7 @@ Concentric bloom · HTML
             align-items: center;
             gap: 8px;
         }
- 
+
         .control-section h3::before {
             content: counter(section, decimal-leading-zero);
             font-family: 'JetBrains Mono', monospace;
@@ -445,7 +247,7 @@ Concentric bloom · HTML
             background: var(--accent-2);
             padding: 2px 6px;
         }
- 
+
         /* ─── Seed Controls ─────────────────────────────────────────── */
         .seed-input {
             width: 100%;
@@ -459,13 +261,13 @@ Concentric bloom · HTML
             border: 2px solid var(--line);
             text-align: center;
         }
- 
+
         .seed-input:focus {
             outline: none;
             background: #fff2ea;
             box-shadow: 3px 3px 0 var(--accent);
         }
- 
+
         .select-input {
             width: 100%;
             background: var(--panel);
@@ -476,28 +278,28 @@ Concentric bloom · HTML
             color: var(--ink);
             cursor: pointer;
         }
- 
+
         .select-input:focus {
             outline: none;
             box-shadow: 3px 3px 0 var(--accent-2);
         }
- 
+
         .seed-controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
             margin-bottom: 8px;
         }
- 
+
         .regen-button {
             margin-bottom: 0;
         }
- 
+
         /* ─── Parameter Controls ────────────────────────────────────── */
         .control-group {
             margin-bottom: 16px;
         }
- 
+
         .control-group label {
             display: flex;
             align-items: center;
@@ -509,19 +311,19 @@ Concentric bloom · HTML
             text-transform: uppercase;
             letter-spacing: 0.01em;
         }
- 
+
         .param-btns {
             display: flex;
             align-items: center;
             gap: 6px;
         }
- 
+
         .slider-container {
             display: flex;
             align-items: center;
             gap: 10px;
         }
- 
+
         .slider-container input[type="range"] {
             flex: 1;
             height: 4px;
@@ -529,7 +331,7 @@ Concentric bloom · HTML
             outline: none;
             -webkit-appearance: none;
         }
- 
+
         .slider-container input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 14px;
@@ -540,11 +342,11 @@ Concentric bloom · HTML
             cursor: pointer;
             transition: transform 0.12s ease;
         }
- 
+
         .slider-container input[type="range"]::-webkit-slider-thumb:hover {
             transform: scale(1.2);
         }
- 
+
         .slider-container input[type="range"]::-moz-range-thumb {
             width: 14px;
             height: 14px;
@@ -553,7 +355,7 @@ Concentric bloom · HTML
             border-radius: 0;
             cursor: pointer;
         }
- 
+
         .value-display {
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
@@ -565,7 +367,7 @@ Concentric bloom · HTML
             padding: 2px 4px;
             text-align: right;
         }
- 
+
         /* ─── Animation (cycle) controls ────────────────────────────── */
         .anim-toggle {
             flex-shrink: 0;
@@ -584,38 +386,38 @@ Concentric bloom · HTML
             transition: all 0.12s ease;
             padding: 0;
         }
- 
+
         .anim-toggle:hover {
             background: var(--ink);
             color: var(--panel);
         }
- 
+
         .anim-toggle.active {
             background: var(--accent-2);
             border-color: var(--line);
             color: var(--panel);
             animation: anim-pulse 1.4s ease-in-out infinite;
         }
- 
+
         .anim-toggle.dice-mini:hover {
             background: var(--accent);
         }
- 
+
         @keyframes anim-pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
- 
+
         .anim-range {
             display: none;
             flex-direction: column;
             margin-top: 10px;
         }
- 
+
         .anim-range.visible {
             display: flex;
         }
- 
+
         /* Dual-handle range slider: two overlapping <input type=range> with a
            filled bar drawn between them, so setting a cycle's min/max is a
            drag instead of typing two numbers. */
@@ -623,7 +425,7 @@ Concentric bloom · HTML
             position: relative;
             height: 16px;
         }
- 
+
         .dual-slider-track {
             position: absolute;
             top: 50%;
@@ -634,7 +436,7 @@ Concentric bloom · HTML
             border: 1px solid var(--line);
             transform: translateY(-50%);
         }
- 
+
         .dual-slider-range {
             position: absolute;
             top: 50%;
@@ -642,7 +444,7 @@ Concentric bloom · HTML
             background: var(--accent-2);
             transform: translateY(-50%);
         }
- 
+
         .dual-slider input[type="range"] {
             position: absolute;
             top: 0;
@@ -655,11 +457,11 @@ Concentric bloom · HTML
             -webkit-appearance: none;
             appearance: none;
         }
- 
+
         .dual-slider input[type="range"]::-webkit-slider-runnable-track {
             background: none;
         }
- 
+
         .dual-slider input[type="range"]::-webkit-slider-thumb {
             pointer-events: auto;
             -webkit-appearance: none;
@@ -672,12 +474,12 @@ Concentric bloom · HTML
             cursor: pointer;
             margin-top: 0;
         }
- 
+
         .dual-slider input[type="range"]::-moz-range-track {
             background: none;
             border: none;
         }
- 
+
         .dual-slider input[type="range"]::-moz-range-thumb {
             pointer-events: auto;
             width: 10px;
@@ -688,7 +490,7 @@ Concentric bloom · HTML
             outline: 1px solid var(--line);
             cursor: pointer;
         }
- 
+
         .dual-slider-labels {
             display: flex;
             justify-content: space-between;
@@ -697,11 +499,11 @@ Concentric bloom · HTML
             color: var(--ink-soft);
             margin-top: 4px;
         }
- 
+
         .dice-button {
             font-size: 15px;
         }
- 
+
         /* ─── Compact Palette Grid ──────────────────────────────────── */
         .palette-grid {
             display: grid;
@@ -709,7 +511,7 @@ Concentric bloom · HTML
             gap: 6px;
             margin-bottom: 14px;
         }
- 
+
         .swatch {
             position: relative;
             width: 100%;
@@ -719,7 +521,7 @@ Concentric bloom · HTML
             overflow: hidden;
             cursor: pointer;
         }
- 
+
         .swatch input[type="color"] {
             position: absolute;
             inset: -20%;
@@ -730,26 +532,26 @@ Concentric bloom · HTML
             cursor: pointer;
             opacity: 0;
         }
- 
+
         .bg-swatch-row {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 14px;
         }
- 
+
         .bg-swatch-row .swatch {
             width: 32px;
             height: 32px;
             flex-shrink: 0;
         }
- 
+
         .bg-swatch-row label {
             font-size: 11.5px;
             text-transform: uppercase;
             color: var(--ink);
         }
- 
+
         /* ─── Buttons ────────────────────────────────────────────────── */
         .button {
             background: var(--panel);
@@ -767,43 +569,43 @@ Concentric bloom · HTML
             transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
             width: 100%;
         }
- 
+
         .button:hover {
             transform: translate(-2px, -2px);
             box-shadow: 5px 5px 0 var(--ink);
         }
- 
+
         .button:active {
             transform: translate(0, 0);
             box-shadow: 1px 1px 0 var(--ink);
         }
- 
+
         .button.primary {
             background: var(--accent);
             border-color: var(--line);
             color: var(--ink);
             font-weight: 700;
         }
- 
+
         .button.primary:hover {
             background: #ff5c3d;
         }
- 
+
         .button-row {
             display: flex;
             gap: 8px;
         }
- 
+
         .button-row .button {
             flex: 1;
         }
- 
+
         /* ─── Responsive - Stack panel as a bottom sheet on mobile ─────── */
         @media (max-width: 720px) {
             .canvas-area {
                 padding: 16px 16px 200px 16px;
             }
- 
+
             .sidebar {
                 top: auto;
                 left: 16px;
@@ -812,7 +614,7 @@ Concentric bloom · HTML
                 width: auto;
                 height: 46vh;
             }
- 
+
             .panel-tab {
                 top: auto;
                 bottom: 16px;
@@ -829,9 +631,9 @@ Concentric bloom · HTML
             </div>
         </div>
     </div>
- 
+
     <button class="panel-tab" id="panelTab" onclick="togglePanel()" aria-label="Show controls">≡</button>
- 
+
     <div class="sidebar" id="sidebarPanel">
         <div class="panel-head">
             <div class="wordmark">Concentric<span>Bloom</span></div>
@@ -847,8 +649,8 @@ Concentric bloom · HTML
                 </div>
                 <button class="button regen-button" onclick="randomSeedAndUpdate()">↻ Random</button>
             </div>
- 
- 
+
+
             <!-- Animation Section (cycles parameter values) -->
             <div class="control-section">
                 <h3>Animation</h3>
@@ -871,11 +673,11 @@ Concentric bloom · HTML
                     <button class="button" onclick="stopAllAnimations()">■ Stop All Cycles</button>
                 </div>
             </div>
- 
+
             <!-- Parameters Section -->
             <div class="control-section">
                 <h3>Composition</h3>
- 
+
                 <div class="control-group">
                     <label>Form Density <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('formCount')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-formCount" onclick="toggleAnim('formCount')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -892,7 +694,7 @@ Concentric bloom · HTML
                         <div class="dual-slider-labels"><span id="formCount-from-label">100</span><span id="formCount-to-label">220</span></div>
                     </div>
                 </div>
- 
+
                 <div class="control-group">
                     <label>Max Scale <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('maxRadius')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-maxRadius" onclick="toggleAnim('maxRadius')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -909,7 +711,7 @@ Concentric bloom · HTML
                         <div class="dual-slider-labels"><span id="maxRadius-from-label">210</span><span id="maxRadius-to-label">250</span></div>
                     </div>
                 </div>
- 
+
                 <div class="control-group">
                     <label>Overlap Fluidity <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('overlap')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-overlap" onclick="toggleAnim('overlap')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -926,7 +728,7 @@ Concentric bloom · HTML
                         <div class="dual-slider-labels"><span id="overlap-from-label">0.1</span><span id="overlap-to-label">0.45</span></div>
                     </div>
                 </div>
- 
+
                 <div class="control-group">
                     <label>Ring Density <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('ringDensity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-ringDensity" onclick="toggleAnim('ringDensity')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -943,7 +745,7 @@ Concentric bloom · HTML
                         <div class="dual-slider-labels"><span id="ringDensity-from-label">0.8</span><span id="ringDensity-to-label">1.8</span></div>
                     </div>
                 </div>
- 
+
                 <div class="control-group">
                     <label>Nesting Probability <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('nestProb')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-nestProb" onclick="toggleAnim('nestProb')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -961,11 +763,11 @@ Concentric bloom · HTML
                     </div>
                 </div>
             </div>
- 
+
             <!-- Rings & Fill -->
             <div class="control-section">
                 <h3>Rings &amp; Fill</h3>
- 
+
                 <div class="control-group">
                     <label>Filled Ring Amount <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('filledAmount')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-filledAmount" onclick="toggleAnim('filledAmount')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -982,7 +784,7 @@ Concentric bloom · HTML
                         <div class="dual-slider-labels"><span id="filledAmount-from-label">0.15</span><span id="filledAmount-to-label">0.7</span></div>
                     </div>
                 </div>
- 
+
                 <div class="control-group">
                     <label>Gradient Complexity <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('gradientComplexity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-gradientComplexity" onclick="toggleAnim('gradientComplexity')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -999,7 +801,7 @@ Concentric bloom · HTML
                         <div class="dual-slider-labels"><span id="gradientComplexity-from-label">2</span><span id="gradientComplexity-to-label">5</span></div>
                     </div>
                 </div>
- 
+
                 <div class="control-group">
                     <label>Ring Spacing <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('ringSpacing')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-ringSpacing" onclick="toggleAnim('ringSpacing')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -1016,7 +818,7 @@ Concentric bloom · HTML
                         <div class="dual-slider-labels"><span id="ringSpacing-from-label">0.6</span><span id="ringSpacing-to-label">1.8</span></div>
                     </div>
                 </div>
- 
+
                 <div class="control-group">
                     <label>Spacing Growth <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('spacingGrowth')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-spacingGrowth" onclick="toggleAnim('spacingGrowth')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -1034,11 +836,11 @@ Concentric bloom · HTML
                     </div>
                 </div>
             </div>
- 
+
             <!-- Focus & Blur -->
             <div class="control-section">
                 <h3>Glow</h3>
- 
+
                 <div class="control-group">
                     <label>Glow Rings <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowChance')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowChance" onclick="toggleAnim('glowChance')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -1055,7 +857,7 @@ Concentric bloom · HTML
                         <div class="dual-slider-labels"><span id="glowChance-from-label">0.05</span><span id="glowChance-to-label">0.6</span></div>
                     </div>
                 </div>
- 
+
                 <div class="control-group">
                     <label>Glow Intensity <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowIntensity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowIntensity" onclick="toggleAnim('glowIntensity')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -1072,7 +874,7 @@ Concentric bloom · HTML
                         <div class="dual-slider-labels"><span id="glowIntensity-from-label">2</span><span id="glowIntensity-to-label">16</span></div>
                     </div>
                 </div>
- 
+
                 <div class="control-group">
                     <label>Glow Layers <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowSteps')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowSteps" onclick="toggleAnim('glowSteps')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -1090,11 +892,11 @@ Concentric bloom · HTML
                     </div>
                 </div>
             </div>
- 
+
             <!-- Canvas Section -->
             <div class="control-section">
                 <h3>Canvas</h3>
- 
+
                 <div class="control-group">
                     <label>Aspect Preset</label>
                     <select id="canvasPreset" class="select-input" onchange="applyCanvasPreset(this.value)">
@@ -1108,18 +910,18 @@ Concentric bloom · HTML
                     </select>
                 </div>
             </div>
- 
+
             <!-- Colors Section -->
             <div class="control-section">
                 <h3>Colors</h3>
- 
+
                 <div class="bg-swatch-row">
                     <div class="swatch" style="background:#ffffff;">
                         <input type="color" id="bgColor" value="#ffffff" onchange="updateBgColor(this.value)">
                     </div>
                     <label>Background</label>
                 </div>
- 
+
                 <div class="control-group">
                     <label>Cycle Colors <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('colorCycleHue')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-colorCycleHue" onclick="toggleAnim('colorCycleHue')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
@@ -1136,10 +938,10 @@ Concentric bloom · HTML
                         <div class="dual-slider-labels"><span id="colorCycleHue-from-label">0</span><span id="colorCycleHue-to-label">360</span></div>
                     </div>
                 </div>
- 
+
                 <div class="palette-grid" id="paletteGrid"></div>
             </div>
- 
+
             <!-- Actions Section (ALWAYS KEEP THIS) -->
             <div class="control-section">
                 <h3>Actions</h3>
@@ -1153,12 +955,12 @@ Concentric bloom · HTML
                 </div>
             </div>
     </div>
- 
+
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // GENERATIVE ART PARAMETERS
         // ═══════════════════════════════════════════════════════════════════════
- 
+
         let params = {
             seed: 12345,
             formCount: 150,
@@ -1183,10 +985,10 @@ Concentric bloom · HTML
                 '#00e5c7', '#ff5b1f', '#b026ff', '#eaff00'
             ]
         };
- 
+
         let defaultParams = {...params, colorPalette: [...params.colorPalette]}; // Store defaults for reset
         let renderPalette = [];
- 
+
         // ═══════════════════════════════════════════════════════════════════════
         // ANIMATION (PARAMETER CYCLING) SYSTEM
         // ═══════════════════════════════════════════════════════════════════════
@@ -1195,37 +997,37 @@ Concentric bloom · HTML
         // and "to" value forever, until toggled off. A single shared timer drives
         // every active cycle so we only ever trigger one recompute per tick, even
         // if several parameters are cycling at once.
- 
+
         const lightweightAnimParams = ['glowIntensity', 'glowSteps', 'colorCycleHue']; // safe to re-render without full repack
- 
+
         let activeAnimations = {};   // paramName -> true
         let animStartTimes = {};     // paramName -> performance.now() at toggle-on
         let animLoopHandle = null;
         let animSpeed = 0.4;
         let blendAmount = 60; // 0-100%, how much a heavy rebuild crossfades into the next frame
- 
+
         function updateAnimSpeed(value) {
             animSpeed = parseFloat(value);
             document.getElementById('animSpeed-value').textContent = value;
         }
- 
+
         function updateBlendAmount(value) {
             blendAmount = parseFloat(value);
             document.getElementById('blendAmount-value').textContent = value + '%';
         }
- 
+
         // All parameters that can be cycled, with their default from/to range
         // (used by both the initial page load and "Reset").
         const cycleParamIds = ['formCount', 'maxRadius', 'overlap', 'ringDensity', 'nestProb',
             'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity', 'glowSteps', 'colorCycleHue'];
- 
+
         const defaultAnimRanges = {
             formCount: [100, 220], maxRadius: [210, 250], overlap: [0.1, 0.45],
             ringDensity: [0.8, 1.8], nestProb: [0.1, 0.6], filledAmount: [0.15, 0.7],
             gradientComplexity: [2, 5], ringSpacing: [0.6, 1.8], spacingGrowth: [0.4, 0.85],
             glowChance: [0.05, 0.6], glowIntensity: [2, 16], glowSteps: [2, 6], colorCycleHue: [0, 360]
         };
- 
+
         // Keeps the two handles from crossing, updates the little numeric
         // labels, and redraws the filled bar between them.
         function updateDualRange(paramName, source) {
@@ -1233,15 +1035,15 @@ Concentric bloom · HTML
             const toEl = document.getElementById(paramName + '-to');
             let f = parseFloat(fromEl.value);
             let t = parseFloat(toEl.value);
- 
+
             if (source === fromEl && f > t) { fromEl.value = t; f = t; }
             if (source === toEl && t < f) { toEl.value = f; t = f; }
- 
+
             document.getElementById(paramName + '-from-label').textContent = f;
             document.getElementById(paramName + '-to-label').textContent = t;
             renderDualRangeFill(paramName);
         }
- 
+
         function renderDualRangeFill(paramName) {
             const fromEl = document.getElementById(paramName + '-from');
             const toEl = document.getElementById(paramName + '-to');
@@ -1253,7 +1055,7 @@ Concentric bloom · HTML
             rangeDiv.style.left = pctF + '%';
             rangeDiv.style.width = Math.max(0, pctT - pctF) + '%';
         }
- 
+
         function setDualRange(paramName, lo, hi) {
             const fromEl = document.getElementById(paramName + '-from');
             const toEl = document.getElementById(paramName + '-to');
@@ -1263,7 +1065,7 @@ Concentric bloom · HTML
             document.getElementById(paramName + '-to-label').textContent = hi;
             renderDualRangeFill(paramName);
         }
- 
+
         // Mini dice button: picks a fresh random from/to span for just this one
         // parameter (at least ~20% of its slider's range apart, so the cycle is
         // always visible) and activates cycling for it immediately.
@@ -1272,18 +1074,18 @@ Concentric bloom · HTML
             const min = parseFloat(slider.min), max = parseFloat(slider.max), step = parseFloat(slider.step) || 1;
             const span = max - min;
             const minGap = Math.max(step, span * 0.2);
- 
+
             let a = min + Math.random() * span;
             let b = min + Math.random() * span;
             if (Math.abs(a - b) < minGap) b = a + minGap;
- 
+
             let lo = Math.min(a, b), hi = Math.max(a, b);
             lo = Math.max(min, Math.round(lo / step) * step);
             hi = Math.min(max, Math.round(hi / step) * step);
             if (hi <= lo) hi = Math.min(max, lo + step);
- 
+
             setDualRange(paramName, lo, hi);
- 
+
             if (!activeAnimations[paramName]) {
                 activeAnimations[paramName] = true;
                 document.getElementById('anim-btn-' + paramName).classList.add('active');
@@ -1292,14 +1094,14 @@ Concentric bloom · HTML
             // small random phase offset so re-rolling a running cycle doesn't
             // visibly snap back to the same spot in its oscillation
             animStartTimes[paramName] = performance.now() - Math.random() * 2000;
- 
+
             startAnimLoop();
         }
- 
+
         function toggleAnim(paramName) {
             const btn = document.getElementById('anim-btn-' + paramName);
             const rangeDiv = document.getElementById('anim-range-' + paramName);
- 
+
             if (activeAnimations[paramName]) {
                 delete activeAnimations[paramName];
                 btn.classList.remove('active');
@@ -1313,7 +1115,7 @@ Concentric bloom · HTML
                 startAnimLoop();
             }
         }
- 
+
         function stopAllAnimations() {
             for (const paramName in activeAnimations) {
                 const btn = document.getElementById('anim-btn-' + paramName);
@@ -1324,13 +1126,13 @@ Concentric bloom · HTML
             activeAnimations = {};
             stopAnimLoop();
         }
- 
+
         function startAnimLoop() {
             if (animLoopHandle) return;
             lastHeavyRebuild = 0;
             animLoopHandle = requestAnimationFrame(animFrame);
         }
- 
+
         function stopAnimLoop() {
             if (animLoopHandle) {
                 cancelAnimationFrame(animLoopHandle);
@@ -1339,7 +1141,7 @@ Concentric bloom · HTML
             crossfadeActive = false;
             if (sceneBuffer) image(sceneBuffer, 0, 0);
         }
- 
+
         // Full circle-packing is too expensive to redo every animation frame,
         // so heavy parameters only trigger a rebuild every HEAVY_REBUILD_INTERVAL
         // ms. Lightweight parameters (hue rotation, glow intensity) just repaint
@@ -1347,40 +1149,40 @@ Concentric bloom · HTML
         let lastHeavyRebuild = 0;
         const HEAVY_REBUILD_INTERVAL = 110;
         const MAX_BLEND_MS = 140; // upper bound for the "Transition Blend" slider
- 
+
         let crossfadeActive = false;
         let crossfadeStart = 0;
         let crossfadeDuration = 0;
- 
+
         function animFrame(now) {
             let sawHeavy = false;
             let sawLightweight = false;
- 
+
             for (const paramName in activeAnimations) {
                 const fromEl = document.getElementById(paramName + '-from');
                 const toEl = document.getElementById(paramName + '-to');
                 if (!fromEl || !toEl) continue;
- 
+
                 const from = parseFloat(fromEl.value);
                 const to = parseFloat(toEl.value);
                 if (isNaN(from) || isNaN(to)) continue;
- 
+
                 const elapsed = (now - animStartTimes[paramName]) / 1000;
                 const phase = 0.5 + 0.5 * Math.sin(elapsed * animSpeed * Math.PI); // 0..1..0 ping-pong
                 const raw = from + (to - from) * phase;
- 
+
                 const slider = document.getElementById(paramName);
                 const step = parseFloat(slider.step) || 1;
                 const rounded = Math.round(raw / step) * step;
- 
+
                 slider.value = rounded;
                 document.getElementById(paramName + '-value').textContent = rounded;
                 params[paramName] = rounded;
- 
+
                 if (!lightweightAnimParams.includes(paramName)) sawHeavy = true;
                 else sawLightweight = true;
             }
- 
+
             if (sawHeavy && (now - lastHeavyRebuild >= HEAVY_REBUILD_INTERVAL)) {
                 lastHeavyRebuild = now;
                 // snapshot the scene as it looks right now — this becomes the
@@ -1389,7 +1191,7 @@ Concentric bloom · HTML
                 prevSceneBuffer.clear();
                 prevSceneBuffer.image(sceneBuffer, 0, 0);
                 initializeSystem(); // rebuilds forms and repaints into sceneBuffer
- 
+
                 crossfadeDuration = (blendAmount / 100) * MAX_BLEND_MS;
                 if (crossfadeDuration > 0) {
                     crossfadeActive = true;
@@ -1400,7 +1202,7 @@ Concentric bloom · HTML
             } else if (sawLightweight) {
                 renderComposition(); // cheap repaint with the latest values every frame
             }
- 
+
             // compositing: bleed the previous frame into the new one while a
             // crossfade is in flight, otherwise just show the current scene
             if (crossfadeActive) {
@@ -1416,59 +1218,59 @@ Concentric bloom · HTML
             } else {
                 image(sceneBuffer, 0, 0);
             }
- 
+
             animLoopHandle = requestAnimationFrame(animFrame);
         }
- 
+
         // ═══════════════════════════════════════════════════════════════════════
         // P5.JS GENERATIVE ALGORITHM — CONCENTRIC PACKING
         // ═══════════════════════════════════════════════════════════════════════
- 
+
         let forms = [];
         let rng; // seeded pseudo-random generator (own implementation for total determinism)
         let rngState;
- 
+
         // The composition is always drawn into sceneBuffer first, then copied to
         // the visible canvas. This lets animFrame() blend the old buffer
         // (prevSceneBuffer) into the new one over a few frames instead of
         // popping instantly whenever a heavy parameter triggers a rebuild.
         let sceneBuffer, prevSceneBuffer;
- 
+
         function ensureBuffers() {
             if (sceneBuffer) sceneBuffer.remove();
             if (prevSceneBuffer) prevSceneBuffer.remove();
             sceneBuffer = createGraphics(params.canvasWidth, params.canvasHeight);
             prevSceneBuffer = createGraphics(params.canvasWidth, params.canvasHeight);
         }
- 
+
         // Used for any non-animated change (manual slider drag, seed change,
         // palette edit, reset, etc.) so those stay instant with no crossfade.
         function compositeStatic() {
             crossfadeActive = false;
             image(sceneBuffer, 0, 0);
         }
- 
+
         function setup() {
             computeCanvasSizeForPreset('fit');
- 
+
             let canvas = createCanvas(params.canvasWidth, params.canvasHeight);
             canvas.parent('canvas-container');
             ensureBuffers();
- 
+
             renderPaletteGrid();
             initializeSystem();
             compositeStatic();
- 
+
             document.querySelector('.loading').style.display = 'none';
         }
- 
+
         function getAvailableCanvasSize() {
             let area = document.querySelector('.canvas-area');
             let w = Math.max(400, Math.floor(area.clientWidth - 8));
             let h = Math.max(400, Math.floor(area.clientHeight - 8));
             return { w, h };
         }
- 
+
         function computeCanvasSizeForPreset(preset) {
             let area = getAvailableCanvasSize();
             if (preset === 'fit') {
@@ -1484,7 +1286,7 @@ Concentric bloom · HTML
             }
             params.canvasPreset = preset;
         }
- 
+
         function applyCanvasPreset(preset) {
             computeCanvasSizeForPreset(preset);
             resizeCanvas(params.canvasWidth, params.canvasHeight);
@@ -1492,21 +1294,21 @@ Concentric bloom · HTML
             initializeSystem();
             compositeStatic();
         }
- 
+
         function updateBgColor(value) {
             params.backgroundColor = value;
             document.querySelector('.bg-swatch-row .swatch').style.background = value;
             renderComposition();
             compositeStatic();
         }
- 
+
         function regenerate() {
             params.seed = Math.floor(Math.random() * 999999) + 1;
             updateSeedDisplay();
             initializeSystem();
             compositeStatic();
         }
- 
+
         // --- deterministic PRNG (mulberry32) so seeded runs are 100% reproducible ---
         function seedRng(seed) {
             rngState = seed >>> 0;
@@ -1518,24 +1320,24 @@ Concentric bloom · HTML
             return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
         }
         function rndRange(a, b) { return a + rnd() * (b - a); }
- 
+
         function initializeSystem() {
             randomSeed(params.seed);
             noiseSeed(params.seed);
             seedRng(params.seed * 2654435761 % 2147483647);
- 
+
             forms = [];
- 
+
             buildRadiusPlan();
             packForms();
             addNestedSatellites();
             assignRingRecipes();
- 
+
             renderComposition();
- 
+
             document.querySelector('.loading').style.display = 'none';
         }
- 
+
         // Build a mixed population of radii: a few giants, a mid population, fine dust
         let radiusPlan = [];
         function buildRadiusPlan() {
@@ -1545,7 +1347,7 @@ Concentric bloom · HTML
             let giants = Math.max(4, Math.round(n * 0.06));
             let mediums = Math.round(n * 0.32);
             let dust = n - giants - mediums;
- 
+
             for (let i = 0; i < giants; i++) {
                 radiusPlan.push(rndRange(maxR * 0.55, maxR));
             }
@@ -1560,20 +1362,20 @@ Concentric bloom · HTML
             // largest first so giants claim territory before it fills up
             radiusPlan.sort((a, b) => b - a);
         }
- 
+
         function packForms() {
             let attemptsPerForm = 70;
             let shrinkSteps = 4;
- 
+
             for (let radius of radiusPlan) {
                 let r = radius;
                 let placed = false;
- 
+
                 for (let shrink = 0; shrink <= shrinkSteps && !placed; shrink++) {
                     for (let a = 0; a < attemptsPerForm; a++) {
                         let x = rndRange(-r * 0.15, width + r * 0.15);
                         let y = rndRange(-r * 0.15, height + r * 0.15);
- 
+
                         if (isValidPlacement(x, y, r)) {
                             forms.push(makeForm(x, y, r, false));
                             placed = true;
@@ -1584,7 +1386,7 @@ Concentric bloom · HTML
                 }
             }
         }
- 
+
         function isValidPlacement(x, y, r) {
             for (let f of forms) {
                 let d = dist(x, y, f.x, f.y);
@@ -1593,7 +1395,7 @@ Concentric bloom · HTML
             }
             return true;
         }
- 
+
         // Plant smaller children sharing the exact center of larger parents:
         // true concentric nesting. Every child's own ring system is built
         // around the same origin point as its parent, so the child's rings
@@ -1604,20 +1406,20 @@ Concentric bloom · HTML
             for (let parent of base) {
                 if (parent.r < 45) continue;
                 if (rnd() > params.nestProb) continue;
- 
+
                 let count = 1 + Math.floor(rnd() * 3);
                 // distinct radii, largest first, so nested children stack
                 // as clean concentric layers instead of overlapping randomly
                 let radii = [];
                 for (let i = 0; i < count; i++) radii.push(parent.r * rndRange(0.14, 0.5));
                 radii.sort((a, b) => b - a);
- 
+
                 for (let childR of radii) {
                     forms.push(makeForm(parent.x, parent.y, childR, true));
                 }
             }
         }
- 
+
         function makeForm(x, y, r, nested) {
             let paletteLen = params.colorPalette.length;
             let primary = Math.floor(rnd() * paletteLen);
@@ -1631,13 +1433,13 @@ Concentric bloom · HTML
                 nucleus: rnd() < 0.6
             };
         }
- 
+
         // Precompute each form's ring radii, weights, colors and render modes
         function assignRingRecipes() {
             for (let f of forms) {
                 f.rings = [];
                 f.filledBias = constrain(params.filledAmount + rndRange(-0.2, 0.2), 0, 0.95);
- 
+
                 // spacing driven by user params: base gap scale (ringSpacing) and the
                 // growth curve between successive rings (spacingGrowth), echoing
                 // tree-ring dendrochronology and mitotic membrane spacing
@@ -1653,7 +1455,7 @@ Concentric bloom · HTML
                     cursor -= step * jitter;
                 }
                 radii.sort((a, b) => a - b);
- 
+
                 let prevR = 0;
                 for (let i = 0; i < radii.length; i++) {
                     let useSecondary = (i % 2 === 1) !== (rnd() < f.accentChance);
@@ -1661,12 +1463,12 @@ Concentric bloom · HTML
                     let colIdx2 = useSecondary ? f.primary : f.secondary;
                     let isBold = (i === f.boldRingIndex);
                     let baseWeight = map(f.r, 3, params.maxRadius, 0.5, 3.2, true);
- 
+
                     let roll = rnd();
                     let mode = 'outline';
                     if (roll < f.filledBias * 0.6) mode = 'filled';
                     else if (roll < f.filledBias) mode = 'gradient';
- 
+
                     let weight, alpha;
                     if (mode === 'outline') {
                         weight = isBold ? baseWeight * rndRange(2.0, 3.2) : baseWeight * rndRange(0.5, 1.15);
@@ -1675,7 +1477,7 @@ Concentric bloom · HTML
                         weight = Math.max(1.2, (radii[i] - prevR) * rndRange(0.9, 1.05));
                         alpha = rndRange(190, 255);
                     }
- 
+
                     f.rings.push({
                         radius: radii[i], innerRadius: prevR,
                         colIdx, colIdx2, mode, weight, alpha,
@@ -1686,7 +1488,7 @@ Concentric bloom · HTML
                 }
             }
         }
- 
+
         // Build a multi-stop color index sequence for richer gradient bands
         function buildGradIdxs(colIdx, colIdx2) {
             let n = Math.round(params.gradientComplexity);
@@ -1696,25 +1498,25 @@ Concentric bloom · HTML
             if (n > 1) idxs.push(colIdx2);
             return idxs;
         }
- 
+
         function drawRingStroke(g, f, radius, weight, col) {
             g.noFill();
             g.strokeWeight(weight);
             g.stroke(col);
             g.circle(f.x, f.y, radius * 2);
         }
- 
+
         function drawRingDisc(g, f, radius, col) {
             g.noStroke();
             g.fill(col);
             g.circle(f.x, f.y, radius * 2);
         }
- 
+
         function hexWithAlpha(hex, alpha255) {
             let c = color(hex);
             return `rgba(${red(c)}, ${green(c)}, ${blue(c)}, ${alpha255 / 255})`;
         }
- 
+
         // Gradient-filled annulus drawn with raw canvas 2D path so it can carry
         // a true radial, multi-stop color blend across several palette hues
         function drawRingAnnulusGradient(g, f, innerR, outerR, hexStops, alpha255) {
@@ -1733,7 +1535,7 @@ Concentric bloom · HTML
             ctx.fill('evenodd');
             ctx.restore();
         }
- 
+
         // Cheap glow: a few translucent, wider strokes behind the ring instead of
         // an expensive per-shape canvas blur filter (which tanked performance
         // when applied broadly across hundreds of forms)
@@ -1749,18 +1551,18 @@ Concentric bloom · HTML
                 g.circle(f.x, f.y, radius * 2);
             }
         }
- 
+
         function renderComposition(target) {
             let g = target || sceneBuffer;
             computeRenderPalette();
- 
+
             let bg = color(params.backgroundColor);
             g.background(bg);
- 
+
             for (let f of forms) {
                 for (let ring of f.rings) {
                     let alpha = ring.alpha;
- 
+
                     if (ring.mode === 'filled') {
                         let hex = renderPalette[ring.colIdx % renderPalette.length];
                         if (ring.glow) drawGlowHalo(g, f, ring.radius, hex, alpha);
@@ -1781,7 +1583,7 @@ Concentric bloom · HTML
                         drawRingStroke(g, f, ring.radius, ring.weight, col);
                     }
                 }
- 
+
                 if (f.nucleus) {
                     let nc = colorFromPalette(f.primary, 255 * 0.9);
                     g.noStroke();
@@ -1790,21 +1592,21 @@ Concentric bloom · HTML
                 }
             }
         }
- 
+
         function draw() {
             noLoop();
         }
- 
+
         function colorFromHex(hex, alpha) {
             let c = color(hex);
             c.setAlpha(alpha);
             return c;
         }
- 
+
         function colorFromPalette(idx, alpha) {
             return colorFromHex(renderPalette[idx % renderPalette.length], alpha);
         }
- 
+
         // --- plain-JS hue rotation (independent of p5 colorMode state) ---
         function hexToRgb(hex) {
             hex = hex.replace('#', '');
@@ -1864,11 +1666,11 @@ Concentric bloom · HTML
             renderPalette = shift === 0 ? params.colorPalette.slice()
                 : params.colorPalette.map(hex => rotateHueHex(hex, shift));
         }
- 
+
         function downloadArt() {
             sceneBuffer.save('concentric-bloom-seed-' + params.seed + '.png');
         }
- 
+
         // ═══════════════════════════════════════════════════════════════════════
         // VECTOR (SVG) EXPORT
         // ═══════════════════════════════════════════════════════════════════════
@@ -1883,15 +1685,15 @@ Concentric bloom · HTML
             // combined with a second circle via evenodd to punch an annulus hole
             return `M ${cx - r} ${cy} A ${r} ${r} 0 1 0 ${cx + r} ${cy} A ${r} ${r} 0 1 0 ${cx - r} ${cy} Z`;
         }
- 
+
         function buildSVGMarkup() {
             let w = params.canvasWidth, h = params.canvasHeight;
             let defs = [];
             let body = [];
             let gradId = 0;
- 
+
             body.push(`<rect x="0" y="0" width="${w}" height="${h}" fill="${params.backgroundColor}"/>`);
- 
+
             function emitGlow(f, radius, hex, alpha255) {
                 let a = alpha255 / 255;
                 let haloSteps = Math.max(1, Math.round(params.glowSteps));
@@ -1902,11 +1704,11 @@ Concentric bloom · HTML
                     body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="none" stroke="${hex}" stroke-opacity="${stepAlpha.toFixed(4)}" stroke-width="${(spread * 2).toFixed(2)}"/>`);
                 }
             }
- 
+
             for (let f of forms) {
                 for (let ring of f.rings) {
                     let alpha = ring.alpha / 255;
- 
+
                     if (ring.mode === 'filled') {
                         let hex = renderPalette[ring.colIdx % renderPalette.length];
                         if (ring.glow) emitGlow(f, ring.radius, hex, ring.alpha);
@@ -1934,17 +1736,17 @@ Concentric bloom · HTML
                         body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${ring.radius.toFixed(2)}" fill="none" stroke="${hex}" stroke-opacity="${alpha.toFixed(4)}" stroke-width="${ring.weight.toFixed(2)}"/>`);
                     }
                 }
- 
+
                 if (f.nucleus) {
                     let hex = renderPalette[f.primary % renderPalette.length];
                     let r = (f.r * 0.05 + 1.5) / 2;
                     body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${r.toFixed(2)}" fill="${hex}" fill-opacity="0.9"/>`);
                 }
             }
- 
+
             return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">\n<defs>\n${defs.join('\n')}\n</defs>\n${body.join('\n')}\n</svg>`;
         }
- 
+
         function downloadSVG() {
             computeRenderPalette();
             let svg = buildSVGMarkup();
@@ -1958,12 +1760,12 @@ Concentric bloom · HTML
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
- 
- 
+
+
         // ═══════════════════════════════════════════════════════════════════════
         // UI CONTROL HANDLERS - CUSTOMIZE FOR YOUR PARAMETERS
         // ═══════════════════════════════════════════════════════════════════════
- 
+
         // Floating panel show/hide - purely cosmetic, the canvas is full-bleed
         // underneath so nothing needs to resize or recompute when this toggles.
         function togglePanel() {
@@ -1973,11 +1775,11 @@ Concentric bloom · HTML
             panel.classList.toggle('collapsed', collapsing);
             tab.classList.toggle('showing', collapsing);
         }
- 
+
         function updateParam(paramName, value) {
             params[paramName] = parseFloat(value);
             document.getElementById(paramName + '-value').textContent = value;
- 
+
             let lightweight = ['colorCycleHue', 'glowIntensity', 'glowSteps'];
             if (lightweight.includes(paramName)) {
                 renderComposition();
@@ -1986,14 +1788,14 @@ Concentric bloom · HTML
             }
             compositeStatic();
         }
- 
+
         function renderPaletteGrid() {
             let grid = document.getElementById('paletteGrid');
             grid.innerHTML = params.colorPalette.map((hex, i) =>
                 `<div class="swatch" style="background:${hex};"><input type="color" value="${hex}" oninput="updatePaletteColor(${i}, this.value)"></div>`
             ).join('');
         }
- 
+
         function updatePaletteColor(idx, value) {
             params.colorPalette[idx] = value;
             let swatches = document.querySelectorAll('#paletteGrid .swatch');
@@ -2001,15 +1803,15 @@ Concentric bloom · HTML
             initializeSystem();
             compositeStatic();
         }
- 
+
         // ═══════════════════════════════════════════════════════════════════════
         // SEED CONTROL FUNCTIONS - ALWAYS KEEP THESE
         // ═══════════════════════════════════════════════════════════════════════
- 
+
         function updateSeedDisplay() {
             document.getElementById('seed-input').value = params.seed;
         }
- 
+
         function updateSeed() {
             let input = document.getElementById('seed-input');
             let newSeed = parseInt(input.value);
@@ -2022,33 +1824,33 @@ Concentric bloom · HTML
                 updateSeedDisplay();
             }
         }
- 
+
         function previousSeed() {
             params.seed = Math.max(1, params.seed - 1);
             updateSeedDisplay();
             initializeSystem();
             compositeStatic();
         }
- 
+
         function nextSeed() {
             params.seed = params.seed + 1;
             updateSeedDisplay();
             initializeSystem();
             compositeStatic();
         }
- 
+
         function randomSeedAndUpdate() {
             params.seed = Math.floor(Math.random() * 999999) + 1;
             updateSeedDisplay();
             initializeSystem();
             compositeStatic();
         }
- 
+
         function resetParameters() {
             stopAllAnimations();
- 
+
             params = {...defaultParams, colorPalette: [...defaultParams.colorPalette]};
- 
+
             document.getElementById('formCount').value = params.formCount;
             document.getElementById('formCount-value').textContent = params.formCount;
             document.getElementById('maxRadius').value = params.maxRadius;
@@ -2073,29 +1875,29 @@ Concentric bloom · HTML
             document.getElementById('glowIntensity-value').textContent = params.glowIntensity;
             document.getElementById('glowSteps').value = params.glowSteps;
             document.getElementById('glowSteps-value').textContent = params.glowSteps;
- 
+
             document.getElementById('bgColor').value = params.backgroundColor;
             document.querySelector('.bg-swatch-row .swatch').style.background = params.backgroundColor;
             document.getElementById('colorCycleHue').value = params.colorCycleHue;
             document.getElementById('colorCycleHue-value').textContent = params.colorCycleHue;
- 
+
             renderPaletteGrid();
- 
+
             cycleParamIds.forEach(paramName => {
                 const [lo, hi] = defaultAnimRanges[paramName];
                 setDualRange(paramName, lo, hi);
             });
- 
+
             document.getElementById('canvasPreset').value = 'fit';
             computeCanvasSizeForPreset('fit');
             resizeCanvas(params.canvasWidth, params.canvasHeight);
             ensureBuffers();
- 
+
             updateSeedDisplay();
             initializeSystem();
             compositeStatic();
         }
- 
+
         // Initialize UI on load
         window.addEventListener('load', function() {
             updateSeedDisplay();
@@ -2104,4 +1906,3 @@ Concentric bloom · HTML
     </script>
 </body>
 </html>
-
