@@ -799,7 +799,8 @@
                 </div>
                 <div class="button-row">
                     <button class="button" onclick="resetParameters()">Reset</button>
-                    <button class="button" onclick="downloadArt()">⬇ Download</button>
+                    <button class="button" onclick="downloadArt()">⬇ PNG</button>
+                    <button class="button" onclick="downloadSVG()">⬇ SVG</button>
                 </div>
             </div>
         </div>
@@ -1525,6 +1526,96 @@
 
         function downloadArt() {
             sceneBuffer.save('concentric-bloom-seed-' + params.seed + '.png');
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // VECTOR (SVG) EXPORT
+        // ═══════════════════════════════════════════════════════════════════════
+        // Every shape on screen is already a plain circle, ring-stroke, or a
+        // radial-gradient annulus computed from the `forms` data - none of it
+        // is a raster effect - so the whole piece can be re-emitted as real
+        // SVG geometry (paths/gradients) rather than a rasterized PNG. Shapes
+        // are written in the exact same per-form, per-ring order used by
+        // renderComposition() so stacking/overlap matches the canvas exactly.
+        function circlePathD(cx, cy, r) {
+            // two-arc circle path, needed (rather than <circle>) so it can be
+            // combined with a second circle via evenodd to punch an annulus hole
+            return `M ${cx - r} ${cy} A ${r} ${r} 0 1 0 ${cx + r} ${cy} A ${r} ${r} 0 1 0 ${cx - r} ${cy} Z`;
+        }
+
+        function buildSVGMarkup() {
+            let w = params.canvasWidth, h = params.canvasHeight;
+            let defs = [];
+            let body = [];
+            let gradId = 0;
+
+            body.push(`<rect x="0" y="0" width="${w}" height="${h}" fill="${params.backgroundColor}"/>`);
+
+            function emitGlow(f, radius, hex, alpha255) {
+                let a = alpha255 / 255;
+                let haloSteps = Math.max(1, Math.round(params.glowSteps));
+                for (let i = haloSteps; i >= 1; i--) {
+                    let spread = i * (params.glowIntensity * 0.6);
+                    let stepAlpha = a * (0.16 / i);
+                    if (stepAlpha <= 0.0005 || spread <= 0) continue;
+                    body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="none" stroke="${hex}" stroke-opacity="${stepAlpha.toFixed(4)}" stroke-width="${(spread * 2).toFixed(2)}"/>`);
+                }
+            }
+
+            for (let f of forms) {
+                for (let ring of f.rings) {
+                    let alpha = ring.alpha / 255;
+
+                    if (ring.mode === 'filled') {
+                        let hex = renderPalette[ring.colIdx % renderPalette.length];
+                        if (ring.glow) emitGlow(f, ring.radius, hex, ring.alpha);
+                        if (ring.innerRadius < 0.001) {
+                            body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${ring.radius.toFixed(2)}" fill="${hex}" fill-opacity="${alpha.toFixed(4)}"/>`);
+                        } else {
+                            let midR = (ring.radius + ring.innerRadius) / 2;
+                            body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${midR.toFixed(2)}" fill="none" stroke="${hex}" stroke-opacity="${alpha.toFixed(4)}" stroke-width="${ring.weight.toFixed(2)}"/>`);
+                        }
+                    } else if (ring.mode === 'gradient') {
+                        let hexStops = ring.gradIdxs.map(i => renderPalette[i % renderPalette.length]);
+                        if (ring.glow) emitGlow(f, ring.radius, hexStops[0], ring.alpha);
+                        let id = 'grad' + (gradId++);
+                        let stops = hexStops.map((hex, i) => {
+                            let pos = hexStops.length === 1 ? 0 : i / (hexStops.length - 1);
+                            return `<stop offset="${(pos * 100).toFixed(2)}%" stop-color="${hex}" stop-opacity="${alpha.toFixed(4)}"/>`;
+                        }).join('');
+                        defs.push(`<radialGradient id="${id}" cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${ring.radius.toFixed(2)}" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`);
+                        let outerR = ring.radius, innerR = Math.max(ring.innerRadius, 0.0001);
+                        let d = circlePathD(f.x, f.y, outerR) + ' ' + circlePathD(f.x, f.y, innerR);
+                        body.push(`<path fill-rule="evenodd" fill="url(#${id})" d="${d}"/>`);
+                    } else {
+                        let hex = renderPalette[ring.colIdx % renderPalette.length];
+                        if (ring.glow) emitGlow(f, ring.radius, hex, ring.alpha);
+                        body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${ring.radius.toFixed(2)}" fill="none" stroke="${hex}" stroke-opacity="${alpha.toFixed(4)}" stroke-width="${ring.weight.toFixed(2)}"/>`);
+                    }
+                }
+
+                if (f.nucleus) {
+                    let hex = renderPalette[f.primary % renderPalette.length];
+                    let r = (f.r * 0.05 + 1.5) / 2;
+                    body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${r.toFixed(2)}" fill="${hex}" fill-opacity="0.9"/>`);
+                }
+            }
+
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">\n<defs>\n${defs.join('\n')}\n</defs>\n${body.join('\n')}\n</svg>`;
+        }
+
+        function downloadSVG() {
+            computeRenderPalette();
+            let svg = buildSVGMarkup();
+            let blob = new Blob([svg], { type: 'image/svg+xml' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'concentric-bloom-seed-' + params.seed + '.svg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
 
