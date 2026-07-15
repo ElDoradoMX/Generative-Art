@@ -2,1109 +2,1521 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    ...
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concentric Bloom — Generative Art</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        /* Neutral Theme */
+        :root {
+            --bg-deep: #0c0c10;
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-bg-strong: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --text-primary: rgba(255, 255, 255, 0.92);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --accent: #8b8bf5;
+            --accent-2: #5ee7c0;
+        }
 
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;!--</p>
-<p class="p1"><span class="Apple-converted-space">    </span>THIS IS A TEMPLATE THAT SHOULD BE USED EVERY TIME AND MODIFIED.</p>
-<p class="p1"><span class="Apple-converted-space">    </span>WHAT TO KEEP:</p>
-<p class="p1"><span class="Apple-converted-space">    </span>✓ Overall structure (header, sidebar, main content)</p>
-<p class="p1"><span class="Apple-converted-space">    </span>✓ Anthropic branding (colors, fonts, layout)</p>
-<p class="p1"><span class="Apple-converted-space">    </span>✓ Seed navigation section (always include this)</p>
-<p class="p1"><span class="Apple-converted-space">    </span>✓ Self-contained artifact (everything inline)</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>WHAT TO CREATIVELY EDIT:</p>
-<p class="p1"><span class="Apple-converted-space">    </span>✗ The p5.js algorithm (implement YOUR vision)</p>
-<p class="p1"><span class="Apple-converted-space">    </span>✗ The parameters (define what YOUR art needs)</p>
-<p class="p1"><span class="Apple-converted-space">    </span>✗ The UI controls (match YOUR parameters)</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>Let your philosophy guide the implementation.</p>
-<p class="p1"><span class="Apple-converted-space">    </span>The world is your oyster - be creative!</p>
-<p class="p1">--&gt;</p>
-<p class="p1">&lt;html lang="en"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Concentric Bloom — Generative Art&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"&gt;&lt;/script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Neutral Theme */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>:root {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--bg-deep: #0c0c10;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--glass-bg: rgba(255, 255, 255, 0.06);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--glass-bg-strong: rgba(255, 255, 255, 0.1);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--glass-border: rgba(255, 255, 255, 0.12);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--text-primary: rgba(255, 255, 255, 0.92);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--text-muted: rgba(255, 255, 255, 0.5);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--accent: #8b8bf5;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>--accent-2: #5ee7c0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>* {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-sizing: border-box;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>html, body {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: radial-gradient(circle at 20% 20%, #17171d 0%, var(--bg-deep) 60%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: var(--text-primary);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.container {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 100vh;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-sizing: border-box;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Sidebar */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.sidebar {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 280px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-shrink: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: var(--glass-bg);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>backdrop-filter: blur(24px) saturate(160%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-backdrop-filter: blur(24px) saturate(160%);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 18px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 1px solid var(--glass-border);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow-y: auto;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow-x: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Control Sections */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.control-section {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 22px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding-bottom: 18px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-bottom: 1px solid var(--glass-border);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.control-section:last-child {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-bottom: none;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.control-section h3 {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 11px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>letter-spacing: 0.08em;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: var(--text-muted);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Seed Controls */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.seed-input {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(0, 0, 0, 0.25);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: var(--text-primary);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: 'SF Mono', 'Courier New', monospace;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 13px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 1px solid var(--glass-border);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.seed-input:focus {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>outline: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-color: var(--accent);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.select-input {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(0, 0, 0, 0.25);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 9px 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: inherit;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 13px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 1px solid var(--glass-border);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: var(--text-primary);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.select-input:focus {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>outline: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-color: var(--accent);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.seed-controls {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: grid;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>grid-template-columns: 1fr 1fr;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.regen-button {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Parameter Controls */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.control-group {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.control-group label {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: block;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 12.5px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 500;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: var(--text-primary);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.slider-container {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.slider-container input[type="range"] {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex: 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 3px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: var(--glass-border);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 2px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>outline: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-appearance: none;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.slider-container input[type="range"]::-webkit-slider-thumb {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>-webkit-appearance: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: var(--accent);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 50%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: transform 0.15s ease;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.slider-container input[type="range"]::-webkit-slider-thumb:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: scale(1.15);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.slider-container input[type="range"]::-moz-range-thumb {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: var(--accent);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 50%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.value-display {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: 'SF Mono', 'Courier New', monospace;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 11px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: var(--text-muted);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>min-width: 44px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: right;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Compact Palette Grid */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.palette-grid {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: grid;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>grid-template-columns: repeat(6, 1fr);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.swatch {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: relative;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>aspect-ratio: 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 7px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 1px solid var(--glass-border);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.swatch input[type="color"] {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>inset: -20%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 140%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 140%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>opacity: 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.bg-swatch-row {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.bg-swatch-row .swatch {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 32px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 32px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-shrink: 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.bg-swatch-row label {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 12.5px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: var(--text-primary);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Buttons */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.button {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: var(--glass-bg-strong);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: var(--text-primary);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 1px solid var(--glass-border);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 9px 14px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 9px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 13px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 500;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.15s ease;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.button:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.16);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: translateY(-1px);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.button:active {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transform: translateY(0);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.button.primary {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: var(--accent);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-color: var(--accent);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #0c0c10;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.button.primary:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: #9d9dff;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.button-row {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>.button-row .button {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex: 1;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Canvas Area */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.canvas-area {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex: 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>min-width: 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>#canvas-container {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>#canvas-container canvas {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: block;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>max-height: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: auto !important;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: auto !important;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Loading State */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.loading {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: var(--text-muted);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Responsive - Stack on mobile */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>@media (max-width: 600px) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>.container {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>height: auto;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>min-height: 100vh;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>overflow-y: auto;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>html, body {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>overflow-y: auto;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>.sidebar {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>.canvas-area {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>height: 60vh;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- Control Sidebar --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="sidebar"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Seed Section (ALWAYS KEEP THIS) --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="control-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h3&gt;Seed&lt;/h3&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="number" id="seed-input" class="seed-input" value="12345" onchange="updateSeed()"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="seed-controls"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button class="button" onclick="previousSeed()"&gt;← Prev&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button class="button" onclick="nextSeed()"&gt;Next →&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;button class="button regen-button" onclick="randomSeedAndUpdate()"&gt;↻ Random&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Parameters Section --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="control-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h3&gt;Composition&lt;/h3&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Form Density&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="formCount" min="60" max="260" step="5" value="150" oninput="updateParam('formCount', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="formCount-value"&gt;150&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Max Scale&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="maxRadius" min="180" max="480" step="10" value="360" oninput="updateParam('maxRadius', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="maxRadius-value"&gt;360&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Overlap Fluidity&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="overlap" min="0" max="0.6" step="0.02" value="0.28" oninput="updateParam('overlap', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="overlap-value"&gt;0.28&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Ring Density&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="ringDensity" min="0.5" max="2.2" step="0.05" value="1.2" oninput="updateParam('ringDensity', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="ringDensity-value"&gt;1.2&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Nesting Probability&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="nestProb" min="0" max="0.8" step="0.02" value="0.4" oninput="updateParam('nestProb', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="nestProb-value"&gt;0.4&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Rings &amp; Fill --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="control-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h3&gt;Rings &amp;amp; Fill&lt;/h3&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Filled Ring Amount&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="filledAmount" min="0" max="0.9" step="0.05" value="0.45" oninput="updateParam('filledAmount', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="filledAmount-value"&gt;0.45&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Gradient Complexity&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="gradientComplexity" min="2" max="5" step="1" value="3" oninput="updateParam('gradientComplexity', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="gradientComplexity-value"&gt;3&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Ring Spacing&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="ringSpacing" min="0.4" max="2.5" step="0.05" value="1" oninput="updateParam('ringSpacing', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="ringSpacing-value"&gt;1&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Spacing Growth&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="spacingGrowth" min="0.3" max="0.95" step="0.02" value="0.62" oninput="updateParam('spacingGrowth', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="spacingGrowth-value"&gt;0.62&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Focus &amp; Blur --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="control-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h3&gt;Glow&lt;/h3&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Glow Rings&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="glowChance" min="0" max="0.6" step="0.02" value="0.15" oninput="updateParam('glowChance', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="glowChance-value"&gt;0.15&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Glow Intensity&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="glowIntensity" min="0" max="12" step="1" value="6" oninput="updateParam('glowIntensity', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="glowIntensity-value"&gt;6&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Canvas Section --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="control-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h3&gt;Canvas&lt;/h3&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Aspect Preset&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;select id="canvasPreset" class="select-input" onchange="applyCanvasPreset(this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="fit" selected&gt;Fit Screen&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="1:1"&gt;Square · 1:1&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="4:5"&gt;Portrait · 4:5&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="5:4"&gt;Landscape · 5:4&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="9:16"&gt;Story · 9:16&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="16:9"&gt;Widescreen · 16:9&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;option value="3:2"&gt;Classic · 3:2&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Colors Section --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="control-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h3&gt;Colors&lt;/h3&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="bg-swatch-row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="swatch" style="background:#ffffff;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="color" id="bgColor" value="#ffffff" onchange="updateBgColor(this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Background&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="control-group"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label&gt;Cycle Colors&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="slider-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="range" id="colorCycleHue" min="0" max="360" step="1" value="0" oninput="updateParam('colorCycleHue', this.value)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="value-display" id="colorCycleHue-value"&gt;0&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="palette-grid" id="paletteGrid"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- Actions Section (ALWAYS KEEP THIS) --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="control-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;h3&gt;Actions&lt;/h3&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="button-row" style="margin-bottom: 8px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button class="button primary" onclick="regenerate()"&gt;↻ Regenerate&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="button-row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button class="button" onclick="resetParameters()"&gt;Reset&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;button class="button" onclick="downloadArt()"&gt;⬇ Download&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- Main Canvas Area --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="canvas-area"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="canvas-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="loading"&gt;Initializing generative art...&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// ═══════════════════════════════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// GENERATIVE ART PARAMETERS</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// ═══════════════════════════════════════════════════════════════════════</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let params = {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>seed: 12345,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>formCount: 150,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>maxRadius: 360,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>overlap: 0.28,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>ringDensity: 1.2,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>nestProb: 0.4,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>filledAmount: 0.45,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>colorCycleHue: 0,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gradientComplexity: 3,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>ringSpacing: 1,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>spacingGrowth: 0.62,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>glowChance: 0.15,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>glowIntensity: 6,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>backgroundColor: '#ffffff',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>canvasPreset: 'fit',</p>
-<p class="p1"><span class="Apple-converted-space">            </span>canvasWidth: 1200,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>canvasHeight: 1200,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>colorPalette: [</p>
-<p class="p1"><span class="Apple-converted-space">                </span>'#ff1e8c', '#c6f42d', '#0088c4', '#ff9fc9', '#5b2a8c', '#a4907c',</p>
-<p class="p1"><span class="Apple-converted-space">                </span>'#00e5c7', '#ff5b1f', '#b026ff', '#eaff00'</p>
-<p class="p1"><span class="Apple-converted-space">            </span>]</p>
-<p class="p1"><span class="Apple-converted-space">        </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let defaultParams = {...params, colorPalette: [...params.colorPalette]}; // Store defaults for reset</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let renderPalette = [];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// ═══════════════════════════════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// P5.JS GENERATIVE ALGORITHM — CONCENTRIC PACKING</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// ═══════════════════════════════════════════════════════════════════════</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let forms = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let rng; // seeded pseudo-random generator (own implementation for total determinism)</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let rngState;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function setup() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>computeCanvasSizeForPreset('fit');</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>let canvas = createCanvas(params.canvasWidth, params.canvasHeight);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>canvas.parent('canvas-container');</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>renderPaletteGrid();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>initializeSystem();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.querySelector('.loading').style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function getAvailableCanvasSize() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let area = document.querySelector('.canvas-area');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let w = Math.max(400, Math.floor(area.clientWidth - 8));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let h = Math.max(400, Math.floor(area.clientHeight - 8));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return { w, h };</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function computeCanvasSizeForPreset(preset) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let area = getAvailableCanvasSize();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (preset === 'fit') {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>params.canvasWidth = area.w;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>params.canvasHeight = area.h;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let [wp, hp] = preset.split(':').map(Number);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let ratio = wp / hp;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let w = area.w, h = w / ratio;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (h &gt; area.h) { h = area.h; w = h * ratio; }</p>
-<p class="p1"><span class="Apple-converted-space">                </span>params.canvasWidth = Math.floor(w);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>params.canvasHeight = Math.floor(h);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>params.canvasPreset = preset;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function applyCanvasPreset(preset) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>computeCanvasSizeForPreset(preset);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resizeCanvas(params.canvasWidth, params.canvasHeight);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>initializeSystem();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function updateBgColor(value) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>params.backgroundColor = value;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.querySelector('.bg-swatch-row .swatch').style.background = value;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>renderComposition();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function regenerate() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>params.seed = Math.floor(Math.random() * 999999) + 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateSeedDisplay();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>initializeSystem();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// --- deterministic PRNG (mulberry32) so seeded runs are 100% reproducible ---</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function seedRng(seed) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>rngState = seed &gt;&gt;&gt; 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function rnd() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>rngState |= 0; rngState = (rngState + 0x6D2B79F5) | 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let t = Math.imul(rngState ^ (rngState &gt;&gt;&gt; 15), 1 | rngState);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>t = (t + Math.imul(t ^ (t &gt;&gt;&gt; 7), 61 | t)) ^ t;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return ((t ^ (t &gt;&gt;&gt; 14)) &gt;&gt;&gt; 0) / 4294967296;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function rndRange(a, b) { return a + rnd() * (b - a); }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function initializeSystem() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>randomSeed(params.seed);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>noiseSeed(params.seed);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>seedRng(params.seed * 2654435761 % 2147483647);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>forms = [];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>buildRadiusPlan();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>packForms();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>addNestedSatellites();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>assignRingRecipes();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>renderComposition();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.querySelector('.loading').style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Build a mixed population of radii: a few giants, a mid population, fine dust</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let radiusPlan = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function buildRadiusPlan() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>radiusPlan = [];</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let n = params.formCount;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let maxR = params.maxRadius;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let giants = Math.max(4, Math.round(n * 0.06));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let mediums = Math.round(n * 0.32);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let dust = n - giants - mediums;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let i = 0; i &lt; giants; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>radiusPlan.push(rndRange(maxR * 0.55, maxR));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let i = 0; i &lt; mediums; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>radiusPlan.push(rndRange(maxR * 0.16, maxR * 0.42));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let i = 0; i &lt; dust; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>// power-law bias toward small</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let t = Math.pow(rnd(), 2.6);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>radiusPlan.push(rndRange(maxR * 0.015, maxR * 0.14) + t * maxR * 0.02);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// largest first so giants claim territory before it fills up</p>
-<p class="p1"><span class="Apple-converted-space">            </span>radiusPlan.sort((a, b) =&gt; b - a);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function packForms() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let attemptsPerForm = 70;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let shrinkSteps = 4;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let radius of radiusPlan) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let r = radius;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let placed = false;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>for (let shrink = 0; shrink &lt;= shrinkSteps &amp;&amp; !placed; shrink++) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>for (let a = 0; a &lt; attemptsPerForm; a++) {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let x = rndRange(-r * 0.15, width + r * 0.15);</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let y = rndRange(-r * 0.15, height + r * 0.15);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                        </span>if (isValidPlacement(x, y, r)) {</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>forms.push(makeForm(x, y, r, false));</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>placed = true;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>break;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (!placed) r *= 0.8; // shrink into remaining gaps</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function isValidPlacement(x, y, r) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let f of forms) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let d = dist(x, y, f.x, f.y);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let minAllowed = (r + f.r) * (1 - params.overlap);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (d &lt; minAllowed) return false;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return true;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Plant smaller children fully inside larger parents: true nesting</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function addNestedSatellites() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let base = forms.slice();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let parent of base) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (parent.r &lt; 45) continue;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (rnd() &gt; params.nestProb) continue;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>let count = 1 + Math.floor(rnd() * 3);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>for (let i = 0; i &lt; count; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let childR = parent.r * rndRange(0.14, 0.5);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let maxOffset = Math.max(0, parent.r * 0.92 - childR);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let ang = rnd() * TWO_PI;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let off = rnd() * maxOffset;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let cx = parent.x + cos(ang) * off;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let cy = parent.y + sin(ang) * off;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>forms.push(makeForm(cx, cy, childR, true));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function makeForm(x, y, r, nested) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let paletteLen = params.colorPalette.length;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let primary = Math.floor(rnd() * paletteLen);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let secondary = Math.floor(rnd() * paletteLen);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>x, y, r, nested,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>primary, secondary,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>accentChance: rndRange(0.08, 0.22),</p>
-<p class="p1"><span class="Apple-converted-space">                </span>phaseSeed: rnd() * 1000,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>boldRingIndex: Math.floor(rnd() * 6),</p>
-<p class="p1"><span class="Apple-converted-space">                </span>nucleus: rnd() &lt; 0.6</p>
-<p class="p1"><span class="Apple-converted-space">            </span>};</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Precompute each form's ring radii, weights, colors and render modes</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function assignRingRecipes() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let f of forms) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>f.rings = [];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>f.filledBias = constrain(params.filledAmount + rndRange(-0.2, 0.2), 0, 0.95);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// spacing driven by user params: base gap scale (ringSpacing) and the</p>
-<p class="p1"><span class="Apple-converted-space">                </span>// growth curve between successive rings (spacingGrowth), echoing</p>
-<p class="p1"><span class="Apple-converted-space">                </span>// tree-ring dendrochronology and mitotic membrane spacing</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let ringCount = Math.max(2, Math.round((f.r / 14) * params.ringDensity));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let radii = [];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let cursor = f.r;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let step = f.r * 0.12 * params.ringSpacing;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>for (let i = 0; i &lt; ringCount &amp;&amp; cursor &gt; f.r * 0.06; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>radii.push(cursor);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let jitter = 1 + (noise(f.phaseSeed, i * 0.6) - 0.5) * 0.5;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>step *= (params.spacingGrowth + (noise(i * 0.3, f.phaseSeed) - 0.5) * 0.25);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>step = constrain(step, f.r * 0.02 * params.ringSpacing, f.r * 0.22 * params.ringSpacing);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>cursor -= step * jitter;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>radii.sort((a, b) =&gt; a - b);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>let prevR = 0;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>for (let i = 0; i &lt; radii.length; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let useSecondary = (i % 2 === 1) !== (rnd() &lt; f.accentChance);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let colIdx = useSecondary ? f.secondary : f.primary;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let colIdx2 = useSecondary ? f.primary : f.secondary;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let isBold = (i === f.boldRingIndex);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let baseWeight = map(f.r, 3, params.maxRadius, 0.5, 3.2, true);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let roll = rnd();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let mode = 'outline';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (roll &lt; f.filledBias * 0.6) mode = 'filled';</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>else if (roll &lt; f.filledBias) mode = 'gradient';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let weight, alpha;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (mode === 'outline') {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>weight = isBold ? baseWeight * rndRange(2.0, 3.2) : baseWeight * rndRange(0.5, 1.15);</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>alpha = rndRange(150, 235);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>weight = Math.max(1.2, (radii[i] - prevR) * rndRange(0.9, 1.05));</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>alpha = rndRange(190, 255);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>f.rings.push({</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>radius: radii[i], innerRadius: prevR,</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>colIdx, colIdx2, mode, weight, alpha,</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>gradIdxs: mode === 'gradient' ? buildGradIdxs(colIdx, colIdx2) : null,</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>glow: rnd() &lt; params.glowChance</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>});</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>prevR = radii[i];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Build a multi-stop color index sequence for richer gradient bands</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function buildGradIdxs(colIdx, colIdx2) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let n = Math.round(params.gradientComplexity);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let paletteLen = params.colorPalette.length;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let idxs = [colIdx];</p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let s = 1; s &lt; n - 1; s++) idxs.push(Math.floor(rnd() * paletteLen));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (n &gt; 1) idxs.push(colIdx2);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return idxs;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function drawRingStroke(f, radius, weight, col) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>noFill();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>strokeWeight(weight);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>stroke(col);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>circle(f.x, f.y, radius * 2);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function drawRingDisc(f, radius, col) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>noStroke();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>fill(col);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>circle(f.x, f.y, radius * 2);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function hexWithAlpha(hex, alpha255) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let c = color(hex);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return `rgba(${red(c)}, ${green(c)}, ${blue(c)}, ${alpha255 / 255})`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Gradient-filled annulus drawn with raw canvas 2D path so it can carry</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// a true radial, multi-stop color blend across several palette hues</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function drawRingAnnulusGradient(f, innerR, outerR, hexStops, alpha255) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let ctx = drawingContext;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>ctx.save();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let grad = ctx.createRadialGradient(f.x, f.y, Math.max(innerR, 0.001), f.x, f.y, outerR);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let n = hexStops.length;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let i = 0; i &lt; n; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let pos = n === 1 ? 0 : i / (n - 1);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>grad.addColorStop(constrain(pos, 0, 1), hexWithAlpha(hexStops[i], alpha255));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = grad;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>ctx.beginPath();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>ctx.arc(f.x, f.y, outerR, 0, Math.PI * 2, false);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>ctx.arc(f.x, f.y, Math.max(innerR, 0.0001), 0, Math.PI * 2, true);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>ctx.fill('evenodd');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>ctx.restore();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Cheap glow: a few translucent, wider strokes behind the ring instead of</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// an expensive per-shape canvas blur filter (which tanked performance</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// when applied broadly across hundreds of forms)</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function drawGlowHalo(f, radius, hex, alpha) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (params.glowIntensity &lt;= 0) return;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>noFill();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let haloSteps = 3;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let i = haloSteps; i &gt;= 1; i--) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let spread = i * (params.glowIntensity * 0.6);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let a = alpha * (0.16 / i);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>stroke(colorFromHex(hex, a));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>strokeWeight(spread * 2);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>circle(f.x, f.y, radius * 2);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function renderComposition() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>computeRenderPalette();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>let bg = color(params.backgroundColor);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background(bg);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let f of forms) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>for (let ring of f.rings) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let alpha = ring.alpha;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (ring.mode === 'filled') {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let hex = renderPalette[ring.colIdx % renderPalette.length];</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>if (ring.glow) drawGlowHalo(f, ring.radius, hex, alpha);</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let col = colorFromHex(hex, alpha);</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>if (ring.innerRadius &lt; 0.001) {</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>drawRingDisc(f, ring.radius, col);</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>drawRingStroke(f, (ring.radius + ring.innerRadius) / 2, ring.weight, col);</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>} else if (ring.mode === 'gradient') {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let hexStops = ring.gradIdxs.map(i =&gt; renderPalette[i % renderPalette.length]);</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>if (ring.glow) drawGlowHalo(f, ring.radius, hexStops[0], alpha);</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>drawRingAnnulusGradient(f, ring.innerRadius, ring.radius, hexStops, alpha);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let hex = renderPalette[ring.colIdx % renderPalette.length];</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>if (ring.glow) drawGlowHalo(f, ring.radius, hex, alpha);</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>let col = colorFromHex(hex, alpha);</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>drawRingStroke(f, ring.radius, ring.weight, col);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (f.nucleus) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>let nc = colorFromPalette(f.primary, 255 * 0.9);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>noStroke();</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>fill(nc);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>circle(f.x, f.y, f.r * 0.05 + 1.5);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function draw() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>noLoop();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function colorFromHex(hex, alpha) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let c = color(hex);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>c.setAlpha(alpha);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return c;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function colorFromPalette(idx, alpha) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return colorFromHex(renderPalette[idx % renderPalette.length], alpha);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// --- plain-JS hue rotation (independent of p5 colorMode state) ---</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function hexToRgb(hex) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>hex = hex.replace('#', '');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (hex.length === 3) hex = hex.split('').map(ch =&gt; ch + ch).join('');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let num = parseInt(hex, 16);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return { r: (num &gt;&gt; 16) &amp; 255, g: (num &gt;&gt; 8) &amp; 255, b: num &amp; 255 };</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function rgbToHexStr(r, g, b) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return '#' + [r, g, b].map(v =&gt; Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function rgbToHsl(r, g, b) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>r /= 255; g /= 255; b /= 255;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let max = Math.max(r, g, b), min = Math.min(r, g, b);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let h, s, l = (max + min) / 2;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (max === min) { h = s = 0; }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let d = max - min;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>s = l &gt; 0.5 ? d / (2 - max - min) : d / (max + min);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>switch (max) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>case r: h = (g - b) / d + (g &lt; b ? 6 : 0); break;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>case g: h = (b - r) / d + 2; break;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>default: h = (r - g) / d + 4;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>h /= 6;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return { h, s, l };</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function hslToRgb(h, s, l) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let r, g, b;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (s === 0) { r = g = b = l; }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const hue2rgb = (p, q, t) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (t &lt; 0) t += 1;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (t &gt; 1) t -= 1;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (t &lt; 1 / 6) return p + (q - p) * 6 * t;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (t &lt; 1 / 2) return q;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (t &lt; 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>return p;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>};</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let q = l &lt; 0.5 ? l * (1 + s) : l + s - l * s;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let p = 2 * l - q;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>r = hue2rgb(p, q, h + 1 / 3);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>g = hue2rgb(p, q, h);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>b = hue2rgb(p, q, h - 1 / 3);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return { r: r * 255, g: g * 255, b: b * 255 };</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function rotateHueHex(hex, degrees) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let { r, g, b } = hexToRgb(hex);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let { h, s, l } = rgbToHsl(r, g, b);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>h = ((h + degrees / 360) % 1 + 1) % 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let rgb = hslToRgb(h, s, l);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return rgbToHexStr(rgb.r, rgb.g, rgb.b);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function computeRenderPalette() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let shift = ((params.colorCycleHue % 360) + 360) % 360;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>renderPalette = shift === 0 ? params.colorPalette.slice()</p>
-<p class="p1"><span class="Apple-converted-space">                </span>: params.colorPalette.map(hex =&gt; rotateHueHex(hex, shift));</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function downloadArt() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>saveCanvas('concentric-bloom-seed-' + params.seed, 'png');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// ═══════════════════════════════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// UI CONTROL HANDLERS - CUSTOMIZE FOR YOUR PARAMETERS</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// ═══════════════════════════════════════════════════════════════════════</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function updateParam(paramName, value) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>params[paramName] = parseFloat(value);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById(paramName + '-value').textContent = value;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>let lightweight = ['colorCycleHue', 'glowIntensity'];</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (lightweight.includes(paramName)) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>renderComposition();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>initializeSystem();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function renderPaletteGrid() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let grid = document.getElementById('paletteGrid');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>grid.innerHTML = params.colorPalette.map((hex, i) =&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`&lt;div class="swatch" style="background:${hex};"&gt;&lt;input type="color" value="${hex}" oninput="updatePaletteColor(${i}, this.value)"&gt;&lt;/div&gt;`</p>
-<p class="p1"><span class="Apple-converted-space">            </span>).join('');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function updatePaletteColor(idx, value) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>params.colorPalette[idx] = value;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let swatches = document.querySelectorAll('#paletteGrid .swatch');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (swatches[idx]) swatches[idx].style.background = value;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>initializeSystem();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// ═══════════════════════════════════════════════════════════════════════</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// SEED CONTROL FUNCTIONS - ALWAYS KEEP THESE</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// ═══════════════════════════════════════════════════════════════════════</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function updateSeedDisplay() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('seed-input').value = params.seed;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function updateSeed() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let input = document.getElementById('seed-input');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let newSeed = parseInt(input.value);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (newSeed &amp;&amp; newSeed &gt; 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>params.seed = newSeed;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>initializeSystem();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Reset to current seed if invalid</p>
-<p class="p1"><span class="Apple-converted-space">                </span>updateSeedDisplay();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function previousSeed() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>params.seed = Math.max(1, params.seed - 1);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateSeedDisplay();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>initializeSystem();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function nextSeed() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>params.seed = params.seed + 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateSeedDisplay();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>initializeSystem();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function randomSeedAndUpdate() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>params.seed = Math.floor(Math.random() * 999999) + 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateSeedDisplay();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>initializeSystem();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function resetParameters() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>params = {...defaultParams, colorPalette: [...defaultParams.colorPalette]};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('formCount').value = params.formCount;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('formCount-value').textContent = params.formCount;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('maxRadius').value = params.maxRadius;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('maxRadius-value').textContent = params.maxRadius;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('overlap').value = params.overlap;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('overlap-value').textContent = params.overlap;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('ringDensity').value = params.ringDensity;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('ringDensity-value').textContent = params.ringDensity;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('nestProb').value = params.nestProb;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('nestProb-value').textContent = params.nestProb;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('filledAmount').value = params.filledAmount;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('filledAmount-value').textContent = params.filledAmount;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('gradientComplexity').value = params.gradientComplexity;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('gradientComplexity-value').textContent = params.gradientComplexity;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('ringSpacing').value = params.ringSpacing;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('ringSpacing-value').textContent = params.ringSpacing;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('spacingGrowth').value = params.spacingGrowth;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('spacingGrowth-value').textContent = params.spacingGrowth;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('glowChance').value = params.glowChance;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('glowChance-value').textContent = params.glowChance;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('glowIntensity').value = params.glowIntensity;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('glowIntensity-value').textContent = params.glowIntensity;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('bgColor').value = params.backgroundColor;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.querySelector('.bg-swatch-row .swatch').style.background = params.backgroundColor;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('colorCycleHue').value = params.colorCycleHue;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('colorCycleHue-value').textContent = params.colorCycleHue;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>renderPaletteGrid();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('canvasPreset').value = 'fit';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>computeCanvasSizeForPreset('fit');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resizeCanvas(params.canvasWidth, params.canvasHeight);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateSeedDisplay();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>initializeSystem();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Initialize UI on load</p>
-<p class="p1"><span class="Apple-converted-space">        </span>window.addEventListener('load', function() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateSeedDisplay();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+            background: radial-gradient(circle at 20% 20%, #17171d 0%, var(--bg-deep) 60%);
+            color: var(--text-primary);
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            padding: 16px;
+            gap: 16px;
+            box-sizing: border-box;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px) saturate(160%);
+            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Control Sections */
+        .control-section {
+            margin-bottom: 22px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+        }
+
+        .control-section h3 {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        /* Seed Controls */
+        .seed-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            color: var(--text-primary);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'SF Mono', 'Courier New', monospace;
+            font-size: 13px;
+            margin-bottom: 10px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+        }
+
+        .seed-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .select-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 9px 10px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .select-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .seed-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .regen-button {
+            margin-bottom: 0;
+        }
+
+        /* Parameter Controls */
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-group label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 3px;
+            background: var(--glass-border);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .value-display {
+            font-family: 'SF Mono', 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            min-width: 44px;
+            text-align: right;
+        }
+
+        /* Animation (cycle) controls */
+        .anim-toggle {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.25);
+            color: var(--text-muted);
+            font-size: 11px;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            padding: 0;
+        }
+
+        .anim-toggle:hover {
+            color: var(--text-primary);
+            border-color: var(--accent);
+        }
+
+        .anim-toggle.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #0c0c10;
+            animation: anim-pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes anim-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.55; }
+        }
+
+        .anim-range {
+            display: none;
+            flex-direction: column;
+            margin-top: 10px;
+        }
+
+        .anim-range.visible {
+            display: flex;
+        }
+
+        /* Dual-handle range slider: two overlapping <input type=range> with a
+           filled bar drawn between them, so setting a cycle's min/max is a
+           drag instead of typing two numbers. */
+        .dual-slider {
+            position: relative;
+            height: 16px;
+        }
+
+        .dual-slider-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--glass-border);
+            border-radius: 2px;
+            transform: translateY(-50%);
+        }
+
+        .dual-slider-range {
+            position: absolute;
+            top: 50%;
+            height: 3px;
+            background: var(--accent-2);
+            border-radius: 2px;
+            transform: translateY(-50%);
+        }
+
+        .dual-slider input[type="range"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 16px;
+            margin: 0;
+            background: none;
+            pointer-events: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .dual-slider input[type="range"]::-webkit-slider-runnable-track {
+            background: none;
+        }
+
+        .dual-slider input[type="range"]::-webkit-slider-thumb {
+            pointer-events: auto;
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-2);
+            border: 2px solid #0c0c10;
+            cursor: pointer;
+            margin-top: 0;
+        }
+
+        .dual-slider input[type="range"]::-moz-range-track {
+            background: none;
+            border: none;
+        }
+
+        .dual-slider input[type="range"]::-moz-range-thumb {
+            pointer-events: auto;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-2);
+            border: 2px solid #0c0c10;
+            cursor: pointer;
+        }
+
+        .dual-slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'SF Mono', 'Courier New', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .dice-button {
+            font-size: 15px;
+        }
+
+        /* Compact Palette Grid */
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .swatch {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 7px;
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .swatch input[type="color"] {
+            position: absolute;
+            inset: -20%;
+            width: 140%;
+            height: 140%;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            opacity: 0;
+        }
+
+        .bg-swatch-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .bg-swatch-row .swatch {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+        }
+
+        .bg-swatch-row label {
+            font-size: 12.5px;
+            color: var(--text-primary);
+        }
+
+        /* Buttons */
+        .button {
+            background: var(--glass-bg-strong);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            padding: 9px 14px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            width: 100%;
+        }
+
+        .button:hover {
+            background: rgba(255, 255, 255, 0.16);
+            transform: translateY(-1px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #0c0c10;
+            font-weight: 600;
+        }
+
+        .button.primary:hover {
+            background: #9d9dff;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .button-row .button {
+            flex: 1;
+        }
+
+        /* Canvas Area */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+            background: white;
+        }
+
+        #canvas-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto !important;
+            height: auto !important;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Responsive - Stack on mobile */
+        @media (max-width: 600px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+
+            html, body {
+                overflow-y: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .canvas-area {
+                padding: 20px;
+                height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Control Sidebar -->
+        <div class="sidebar">
+            <!-- Seed Section (ALWAYS KEEP THIS) -->
+            <div class="control-section">
+                <h3>Seed</h3>
+                <input type="number" id="seed-input" class="seed-input" value="12345" onchange="updateSeed()">
+                <div class="seed-controls">
+                    <button class="button" onclick="previousSeed()">← Prev</button>
+                    <button class="button" onclick="nextSeed()">Next →</button>
+                </div>
+                <button class="button regen-button" onclick="randomSeedAndUpdate()">↻ Random</button>
+            </div>
+
+            <!-- Animation Section (cycles parameter values) -->
+            <div class="control-section">
+                <h3>Animation</h3>
+                <div class="control-group" style="margin-bottom: 10px;">
+                    <label>Cycle Speed</label>
+                    <div class="slider-container">
+                        <input type="range" id="animSpeed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateAnimSpeed(this.value)">
+                        <span class="value-display" id="animSpeed-value">0.4</span>
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button class="button primary dice-button" onclick="randomizeCycles()">🎲 Randomize &amp; Cycle All</button>
+                </div>
+                <div class="button-row" style="margin-top: 8px;">
+                    <button class="button" onclick="stopAllAnimations()">■ Stop All Cycles</button>
+                </div>
+            </div>
+
+            <!-- Parameters Section -->
+            <div class="control-section">
+                <h3>Composition</h3>
+
+                <div class="control-group">
+                    <label>Form Density <button class="anim-toggle" id="anim-btn-formCount" onclick="toggleAnim('formCount')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="formCount" min="60" max="260" step="5" value="150" oninput="updateParam('formCount', this.value)">
+                        <span class="value-display" id="formCount-value">150</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-formCount">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-formCount-range"></div>
+                            <input type="range" id="formCount-from" min="60" max="260" step="5" value="100" oninput="updateDualRange('formCount', this)">
+                            <input type="range" id="formCount-to" min="60" max="260" step="5" value="220" oninput="updateDualRange('formCount', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="formCount-from-label">100</span><span id="formCount-to-label">220</span></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Max Scale <button class="anim-toggle" id="anim-btn-maxRadius" onclick="toggleAnim('maxRadius')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="maxRadius" min="180" max="480" step="10" value="360" oninput="updateParam('maxRadius', this.value)">
+                        <span class="value-display" id="maxRadius-value">360</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-maxRadius">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-maxRadius-range"></div>
+                            <input type="range" id="maxRadius-from" min="180" max="480" step="10" value="210" oninput="updateDualRange('maxRadius', this)">
+                            <input type="range" id="maxRadius-to" min="180" max="480" step="10" value="250" oninput="updateDualRange('maxRadius', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="maxRadius-from-label">210</span><span id="maxRadius-to-label">250</span></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Overlap Fluidity <button class="anim-toggle" id="anim-btn-overlap" onclick="toggleAnim('overlap')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="overlap" min="0" max="0.6" step="0.02" value="0.28" oninput="updateParam('overlap', this.value)">
+                        <span class="value-display" id="overlap-value">0.28</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-overlap">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-overlap-range"></div>
+                            <input type="range" id="overlap-from" min="0" max="0.6" step="0.02" value="0.1" oninput="updateDualRange('overlap', this)">
+                            <input type="range" id="overlap-to" min="0" max="0.6" step="0.02" value="0.45" oninput="updateDualRange('overlap', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="overlap-from-label">0.1</span><span id="overlap-to-label">0.45</span></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Ring Density <button class="anim-toggle" id="anim-btn-ringDensity" onclick="toggleAnim('ringDensity')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="ringDensity" min="0.5" max="2.2" step="0.05" value="1.2" oninput="updateParam('ringDensity', this.value)">
+                        <span class="value-display" id="ringDensity-value">1.2</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-ringDensity">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-ringDensity-range"></div>
+                            <input type="range" id="ringDensity-from" min="0.5" max="2.2" step="0.05" value="0.8" oninput="updateDualRange('ringDensity', this)">
+                            <input type="range" id="ringDensity-to" min="0.5" max="2.2" step="0.05" value="1.8" oninput="updateDualRange('ringDensity', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="ringDensity-from-label">0.8</span><span id="ringDensity-to-label">1.8</span></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Nesting Probability <button class="anim-toggle" id="anim-btn-nestProb" onclick="toggleAnim('nestProb')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="nestProb" min="0" max="0.8" step="0.02" value="0.4" oninput="updateParam('nestProb', this.value)">
+                        <span class="value-display" id="nestProb-value">0.4</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-nestProb">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-nestProb-range"></div>
+                            <input type="range" id="nestProb-from" min="0" max="0.8" step="0.02" value="0.1" oninput="updateDualRange('nestProb', this)">
+                            <input type="range" id="nestProb-to" min="0" max="0.8" step="0.02" value="0.6" oninput="updateDualRange('nestProb', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="nestProb-from-label">0.1</span><span id="nestProb-to-label">0.6</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rings & Fill -->
+            <div class="control-section">
+                <h3>Rings &amp; Fill</h3>
+
+                <div class="control-group">
+                    <label>Filled Ring Amount <button class="anim-toggle" id="anim-btn-filledAmount" onclick="toggleAnim('filledAmount')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="filledAmount" min="0" max="0.9" step="0.05" value="0.45" oninput="updateParam('filledAmount', this.value)">
+                        <span class="value-display" id="filledAmount-value">0.45</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-filledAmount">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-filledAmount-range"></div>
+                            <input type="range" id="filledAmount-from" min="0" max="0.9" step="0.05" value="0.15" oninput="updateDualRange('filledAmount', this)">
+                            <input type="range" id="filledAmount-to" min="0" max="0.9" step="0.05" value="0.7" oninput="updateDualRange('filledAmount', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="filledAmount-from-label">0.15</span><span id="filledAmount-to-label">0.7</span></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Gradient Complexity <button class="anim-toggle" id="anim-btn-gradientComplexity" onclick="toggleAnim('gradientComplexity')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="gradientComplexity" min="2" max="5" step="1" value="3" oninput="updateParam('gradientComplexity', this.value)">
+                        <span class="value-display" id="gradientComplexity-value">3</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-gradientComplexity">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-gradientComplexity-range"></div>
+                            <input type="range" id="gradientComplexity-from" min="2" max="5" step="1" value="2" oninput="updateDualRange('gradientComplexity', this)">
+                            <input type="range" id="gradientComplexity-to" min="2" max="5" step="1" value="5" oninput="updateDualRange('gradientComplexity', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="gradientComplexity-from-label">2</span><span id="gradientComplexity-to-label">5</span></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Ring Spacing <button class="anim-toggle" id="anim-btn-ringSpacing" onclick="toggleAnim('ringSpacing')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="ringSpacing" min="0.4" max="2.5" step="0.05" value="1" oninput="updateParam('ringSpacing', this.value)">
+                        <span class="value-display" id="ringSpacing-value">1</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-ringSpacing">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-ringSpacing-range"></div>
+                            <input type="range" id="ringSpacing-from" min="0.4" max="2.5" step="0.05" value="0.6" oninput="updateDualRange('ringSpacing', this)">
+                            <input type="range" id="ringSpacing-to" min="0.4" max="2.5" step="0.05" value="1.8" oninput="updateDualRange('ringSpacing', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="ringSpacing-from-label">0.6</span><span id="ringSpacing-to-label">1.8</span></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Spacing Growth <button class="anim-toggle" id="anim-btn-spacingGrowth" onclick="toggleAnim('spacingGrowth')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="spacingGrowth" min="0.3" max="0.95" step="0.02" value="0.62" oninput="updateParam('spacingGrowth', this.value)">
+                        <span class="value-display" id="spacingGrowth-value">0.62</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-spacingGrowth">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-spacingGrowth-range"></div>
+                            <input type="range" id="spacingGrowth-from" min="0.3" max="0.95" step="0.02" value="0.4" oninput="updateDualRange('spacingGrowth', this)">
+                            <input type="range" id="spacingGrowth-to" min="0.3" max="0.95" step="0.02" value="0.85" oninput="updateDualRange('spacingGrowth', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="spacingGrowth-from-label">0.4</span><span id="spacingGrowth-to-label">0.85</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Focus & Blur -->
+            <div class="control-section">
+                <h3>Glow</h3>
+
+                <div class="control-group">
+                    <label>Glow Rings <button class="anim-toggle" id="anim-btn-glowChance" onclick="toggleAnim('glowChance')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="glowChance" min="0" max="0.6" step="0.02" value="0.15" oninput="updateParam('glowChance', this.value)">
+                        <span class="value-display" id="glowChance-value">0.15</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-glowChance">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-glowChance-range"></div>
+                            <input type="range" id="glowChance-from" min="0" max="0.6" step="0.02" value="0.05" oninput="updateDualRange('glowChance', this)">
+                            <input type="range" id="glowChance-to" min="0" max="0.6" step="0.02" value="0.4" oninput="updateDualRange('glowChance', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="glowChance-from-label">0.05</span><span id="glowChance-to-label">0.4</span></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Glow Intensity <button class="anim-toggle" id="anim-btn-glowIntensity" onclick="toggleAnim('glowIntensity')" title="Cycle this parameter">⟲</button></label>
+                    <div class="slider-container">
+                        <input type="range" id="glowIntensity" min="0" max="12" step="1" value="6" oninput="updateParam('glowIntensity', this.value)">
+                        <span class="value-display" id="glowIntensity-value">6</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-glowIntensity">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-glowIntensity-range"></div>
+                            <input type="range" id="glowIntensity-from" min="0" max="12" step="1" value="2" oninput="updateDualRange('glowIntensity', this)">
+                            <input type="range" id="glowIntensity-to" min="0" max="12" step="1" value="10" oninput="updateDualRange('glowIntensity', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="glowIntensity-from-label">2</span><span id="glowIntensity-to-label">10</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvas Section -->
+            <div class="control-section">
+                <h3>Canvas</h3>
+
+                <div class="control-group">
+                    <label>Aspect Preset</label>
+                    <select id="canvasPreset" class="select-input" onchange="applyCanvasPreset(this.value)">
+                        <option value="fit" selected>Fit Screen</option>
+                        <option value="1:1">Square · 1:1</option>
+                        <option value="4:5">Portrait · 4:5</option>
+                        <option value="5:4">Landscape · 5:4</option>
+                        <option value="9:16">Story · 9:16</option>
+                        <option value="16:9">Widescreen · 16:9</option>
+                        <option value="3:2">Classic · 3:2</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Colors Section -->
+            <div class="control-section">
+                <h3>Colors</h3>
+
+                <div class="bg-swatch-row">
+                    <div class="swatch" style="background:#ffffff;">
+                        <input type="color" id="bgColor" value="#ffffff" onchange="updateBgColor(this.value)">
+                    </div>
+                    <label>Background</label>
+                </div>
+
+                <div class="control-group">
+                    <label>Cycle Colors</label>
+                    <div class="slider-container">
+                        <input type="range" id="colorCycleHue" min="0" max="360" step="1" value="0" oninput="updateParam('colorCycleHue', this.value)">
+                        <span class="value-display" id="colorCycleHue-value">0</span>
+                    </div>
+                </div>
+
+                <div class="palette-grid" id="paletteGrid"></div>
+            </div>
+
+            <!-- Actions Section (ALWAYS KEEP THIS) -->
+            <div class="control-section">
+                <h3>Actions</h3>
+                <div class="button-row" style="margin-bottom: 8px;">
+                    <button class="button primary" onclick="regenerate()">↻ Regenerate</button>
+                </div>
+                <div class="button-row">
+                    <button class="button" onclick="resetParameters()">Reset</button>
+                    <button class="button" onclick="downloadArt()">⬇ Download</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Canvas Area -->
+        <div class="canvas-area">
+            <div id="canvas-container">
+                <div class="loading">Initializing generative art...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // GENERATIVE ART PARAMETERS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let params = {
+            seed: 12345,
+            formCount: 150,
+            maxRadius: 360,
+            overlap: 0.28,
+            ringDensity: 1.2,
+            nestProb: 0.4,
+            filledAmount: 0.45,
+            colorCycleHue: 0,
+            gradientComplexity: 3,
+            ringSpacing: 1,
+            spacingGrowth: 0.62,
+            glowChance: 0.15,
+            glowIntensity: 6,
+            backgroundColor: '#ffffff',
+            canvasPreset: 'fit',
+            canvasWidth: 1200,
+            canvasHeight: 1200,
+            colorPalette: [
+                '#ff1e8c', '#c6f42d', '#0088c4', '#ff9fc9', '#5b2a8c', '#a4907c',
+                '#00e5c7', '#ff5b1f', '#b026ff', '#eaff00'
+            ]
+        };
+
+        let defaultParams = {...params, colorPalette: [...params.colorPalette]}; // Store defaults for reset
+        let renderPalette = [];
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // ANIMATION (PARAMETER CYCLING) SYSTEM
+        // ═══════════════════════════════════════════════════════════════════════
+        // Any slider in Composition / Rings & Fill / Glow can be toggled into a
+        // "cycle" mode: it oscillates smoothly (sine ping-pong) between a "from"
+        // and "to" value forever, until toggled off. A single shared timer drives
+        // every active cycle so we only ever trigger one recompute per tick, even
+        // if several parameters are cycling at once.
+
+        const lightweightAnimParams = ['glowIntensity']; // safe to re-render without full repack
+
+        let activeAnimations = {};   // paramName -> true
+        let animStartTimes = {};     // paramName -> performance.now() at toggle-on
+        let animLoopHandle = null;
+        let animSpeed = 0.4;
+
+        function updateAnimSpeed(value) {
+            animSpeed = parseFloat(value);
+            document.getElementById('animSpeed-value').textContent = value;
+        }
+
+        // All parameters that can be cycled, with their default from/to range
+        // (used by both the initial page load and "Reset").
+        const cycleParamIds = ['formCount', 'maxRadius', 'overlap', 'ringDensity', 'nestProb',
+            'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity'];
+
+        const defaultAnimRanges = {
+            formCount: [100, 220], maxRadius: [210, 250], overlap: [0.1, 0.45],
+            ringDensity: [0.8, 1.8], nestProb: [0.1, 0.6], filledAmount: [0.15, 0.7],
+            gradientComplexity: [2, 5], ringSpacing: [0.6, 1.8], spacingGrowth: [0.4, 0.85],
+            glowChance: [0.05, 0.4], glowIntensity: [2, 10]
+        };
+
+        // Keeps the two handles from crossing, updates the little numeric
+        // labels, and redraws the filled bar between them.
+        function updateDualRange(paramName, source) {
+            const fromEl = document.getElementById(paramName + '-from');
+            const toEl = document.getElementById(paramName + '-to');
+            let f = parseFloat(fromEl.value);
+            let t = parseFloat(toEl.value);
+
+            if (source === fromEl && f > t) { fromEl.value = t; f = t; }
+            if (source === toEl && t < f) { toEl.value = f; t = f; }
+
+            document.getElementById(paramName + '-from-label').textContent = f;
+            document.getElementById(paramName + '-to-label').textContent = t;
+            renderDualRangeFill(paramName);
+        }
+
+        function renderDualRangeFill(paramName) {
+            const fromEl = document.getElementById(paramName + '-from');
+            const toEl = document.getElementById(paramName + '-to');
+            const rangeDiv = document.getElementById('dual-' + paramName + '-range');
+            const min = parseFloat(fromEl.min), max = parseFloat(fromEl.max);
+            const f = parseFloat(fromEl.value), t = parseFloat(toEl.value);
+            const pctF = ((f - min) / (max - min)) * 100;
+            const pctT = ((t - min) / (max - min)) * 100;
+            rangeDiv.style.left = pctF + '%';
+            rangeDiv.style.width = Math.max(0, pctT - pctF) + '%';
+        }
+
+        function setDualRange(paramName, lo, hi) {
+            const fromEl = document.getElementById(paramName + '-from');
+            const toEl = document.getElementById(paramName + '-to');
+            fromEl.value = lo;
+            toEl.value = hi;
+            document.getElementById(paramName + '-from-label').textContent = lo;
+            document.getElementById(paramName + '-to-label').textContent = hi;
+            renderDualRangeFill(paramName);
+        }
+
+        // Dice button: picks a fresh random from/to span for every cyclable
+        // parameter (at least ~20% of its slider's range apart, so the cycle
+        // is always visible) and immediately activates all of them together.
+        function randomizeCycles() {
+            cycleParamIds.forEach(paramName => {
+                const slider = document.getElementById(paramName);
+                const min = parseFloat(slider.min), max = parseFloat(slider.max), step = parseFloat(slider.step) || 1;
+                const span = max - min;
+                const minGap = Math.max(step, span * 0.2);
+
+                let a = min + Math.random() * span;
+                let b = min + Math.random() * span;
+                if (Math.abs(a - b) < minGap) b = a + minGap;
+
+                let lo = Math.min(a, b), hi = Math.max(a, b);
+                lo = Math.max(min, Math.round(lo / step) * step);
+                hi = Math.min(max, Math.round(hi / step) * step);
+                if (hi <= lo) hi = Math.min(max, lo + step);
+
+                setDualRange(paramName, lo, hi);
+
+                if (!activeAnimations[paramName]) {
+                    activeAnimations[paramName] = true;
+                    document.getElementById('anim-btn-' + paramName).classList.add('active');
+                    document.getElementById('anim-range-' + paramName).classList.add('visible');
+                }
+                // random phase offset so cycles feel organic instead of lockstep
+                animStartTimes[paramName] = performance.now() - Math.random() * 4000;
+            });
+
+            startAnimLoop();
+        }
+
+        function toggleAnim(paramName) {
+            const btn = document.getElementById('anim-btn-' + paramName);
+            const rangeDiv = document.getElementById('anim-range-' + paramName);
+
+            if (activeAnimations[paramName]) {
+                delete activeAnimations[paramName];
+                btn.classList.remove('active');
+                rangeDiv.classList.remove('visible');
+                if (Object.keys(activeAnimations).length === 0) stopAnimLoop();
+            } else {
+                activeAnimations[paramName] = true;
+                animStartTimes[paramName] = performance.now();
+                btn.classList.add('active');
+                rangeDiv.classList.add('visible');
+                startAnimLoop();
+            }
+        }
+
+        function stopAllAnimations() {
+            for (const paramName in activeAnimations) {
+                const btn = document.getElementById('anim-btn-' + paramName);
+                const rangeDiv = document.getElementById('anim-range-' + paramName);
+                if (btn) btn.classList.remove('active');
+                if (rangeDiv) rangeDiv.classList.remove('visible');
+            }
+            activeAnimations = {};
+            stopAnimLoop();
+        }
+
+        function startAnimLoop() {
+            if (animLoopHandle) return;
+            // ~11fps: fast enough to read as smooth motion, gentle enough that a
+            // full circle-packing recompute per tick doesn't stutter the UI.
+            animLoopHandle = setInterval(animTick, 90);
+        }
+
+        function stopAnimLoop() {
+            if (animLoopHandle) {
+                clearInterval(animLoopHandle);
+                animLoopHandle = null;
+            }
+        }
+
+        function animTick() {
+            let needsFullRebuild = false;
+
+            for (const paramName in activeAnimations) {
+                const fromEl = document.getElementById(paramName + '-from');
+                const toEl = document.getElementById(paramName + '-to');
+                if (!fromEl || !toEl) continue;
+
+                const from = parseFloat(fromEl.value);
+                const to = parseFloat(toEl.value);
+                if (isNaN(from) || isNaN(to)) continue;
+
+                const elapsed = (performance.now() - animStartTimes[paramName]) / 1000;
+                const phase = 0.5 + 0.5 * Math.sin(elapsed * animSpeed * Math.PI); // 0..1..0 ping-pong
+                const raw = from + (to - from) * phase;
+
+                const slider = document.getElementById(paramName);
+                const step = parseFloat(slider.step) || 1;
+                const rounded = Math.round(raw / step) * step;
+
+                slider.value = rounded;
+                document.getElementById(paramName + '-value').textContent = rounded;
+                params[paramName] = rounded;
+
+                if (!lightweightAnimParams.includes(paramName)) needsFullRebuild = true;
+            }
+
+            if (needsFullRebuild) initializeSystem();
+            else renderComposition();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // P5.JS GENERATIVE ALGORITHM — CONCENTRIC PACKING
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let forms = [];
+        let rng; // seeded pseudo-random generator (own implementation for total determinism)
+        let rngState;
+
+        function setup() {
+            computeCanvasSizeForPreset('fit');
+
+            let canvas = createCanvas(params.canvasWidth, params.canvasHeight);
+            canvas.parent('canvas-container');
+
+            renderPaletteGrid();
+            initializeSystem();
+
+            document.querySelector('.loading').style.display = 'none';
+        }
+
+        function getAvailableCanvasSize() {
+            let area = document.querySelector('.canvas-area');
+            let w = Math.max(400, Math.floor(area.clientWidth - 8));
+            let h = Math.max(400, Math.floor(area.clientHeight - 8));
+            return { w, h };
+        }
+
+        function computeCanvasSizeForPreset(preset) {
+            let area = getAvailableCanvasSize();
+            if (preset === 'fit') {
+                params.canvasWidth = area.w;
+                params.canvasHeight = area.h;
+            } else {
+                let [wp, hp] = preset.split(':').map(Number);
+                let ratio = wp / hp;
+                let w = area.w, h = w / ratio;
+                if (h > area.h) { h = area.h; w = h * ratio; }
+                params.canvasWidth = Math.floor(w);
+                params.canvasHeight = Math.floor(h);
+            }
+            params.canvasPreset = preset;
+        }
+
+        function applyCanvasPreset(preset) {
+            computeCanvasSizeForPreset(preset);
+            resizeCanvas(params.canvasWidth, params.canvasHeight);
+            initializeSystem();
+        }
+
+        function updateBgColor(value) {
+            params.backgroundColor = value;
+            document.querySelector('.bg-swatch-row .swatch').style.background = value;
+            renderComposition();
+        }
+
+        function regenerate() {
+            params.seed = Math.floor(Math.random() * 999999) + 1;
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        // --- deterministic PRNG (mulberry32) so seeded runs are 100% reproducible ---
+        function seedRng(seed) {
+            rngState = seed >>> 0;
+        }
+        function rnd() {
+            rngState |= 0; rngState = (rngState + 0x6D2B79F5) | 0;
+            let t = Math.imul(rngState ^ (rngState >>> 15), 1 | rngState);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        }
+        function rndRange(a, b) { return a + rnd() * (b - a); }
+
+        function initializeSystem() {
+            randomSeed(params.seed);
+            noiseSeed(params.seed);
+            seedRng(params.seed * 2654435761 % 2147483647);
+
+            forms = [];
+
+            buildRadiusPlan();
+            packForms();
+            addNestedSatellites();
+            assignRingRecipes();
+
+            renderComposition();
+
+            document.querySelector('.loading').style.display = 'none';
+        }
+
+        // Build a mixed population of radii: a few giants, a mid population, fine dust
+        let radiusPlan = [];
+        function buildRadiusPlan() {
+            radiusPlan = [];
+            let n = params.formCount;
+            let maxR = params.maxRadius;
+            let giants = Math.max(4, Math.round(n * 0.06));
+            let mediums = Math.round(n * 0.32);
+            let dust = n - giants - mediums;
+
+            for (let i = 0; i < giants; i++) {
+                radiusPlan.push(rndRange(maxR * 0.55, maxR));
+            }
+            for (let i = 0; i < mediums; i++) {
+                radiusPlan.push(rndRange(maxR * 0.16, maxR * 0.42));
+            }
+            for (let i = 0; i < dust; i++) {
+                // power-law bias toward small
+                let t = Math.pow(rnd(), 2.6);
+                radiusPlan.push(rndRange(maxR * 0.015, maxR * 0.14) + t * maxR * 0.02);
+            }
+            // largest first so giants claim territory before it fills up
+            radiusPlan.sort((a, b) => b - a);
+        }
+
+        function packForms() {
+            let attemptsPerForm = 70;
+            let shrinkSteps = 4;
+
+            for (let radius of radiusPlan) {
+                let r = radius;
+                let placed = false;
+
+                for (let shrink = 0; shrink <= shrinkSteps && !placed; shrink++) {
+                    for (let a = 0; a < attemptsPerForm; a++) {
+                        let x = rndRange(-r * 0.15, width + r * 0.15);
+                        let y = rndRange(-r * 0.15, height + r * 0.15);
+
+                        if (isValidPlacement(x, y, r)) {
+                            forms.push(makeForm(x, y, r, false));
+                            placed = true;
+                            break;
+                        }
+                    }
+                    if (!placed) r *= 0.8; // shrink into remaining gaps
+                }
+            }
+        }
+
+        function isValidPlacement(x, y, r) {
+            for (let f of forms) {
+                let d = dist(x, y, f.x, f.y);
+                let minAllowed = (r + f.r) * (1 - params.overlap);
+                if (d < minAllowed) return false;
+            }
+            return true;
+        }
+
+        // Plant smaller children fully inside larger parents: true nesting
+        function addNestedSatellites() {
+            let base = forms.slice();
+            for (let parent of base) {
+                if (parent.r < 45) continue;
+                if (rnd() > params.nestProb) continue;
+
+                let count = 1 + Math.floor(rnd() * 3);
+                for (let i = 0; i < count; i++) {
+                    let childR = parent.r * rndRange(0.14, 0.5);
+                    let maxOffset = Math.max(0, parent.r * 0.92 - childR);
+                    let ang = rnd() * TWO_PI;
+                    let off = rnd() * maxOffset;
+                    let cx = parent.x + cos(ang) * off;
+                    let cy = parent.y + sin(ang) * off;
+                    forms.push(makeForm(cx, cy, childR, true));
+                }
+            }
+        }
+
+        function makeForm(x, y, r, nested) {
+            let paletteLen = params.colorPalette.length;
+            let primary = Math.floor(rnd() * paletteLen);
+            let secondary = Math.floor(rnd() * paletteLen);
+            return {
+                x, y, r, nested,
+                primary, secondary,
+                accentChance: rndRange(0.08, 0.22),
+                phaseSeed: rnd() * 1000,
+                boldRingIndex: Math.floor(rnd() * 6),
+                nucleus: rnd() < 0.6
+            };
+        }
+
+        // Precompute each form's ring radii, weights, colors and render modes
+        function assignRingRecipes() {
+            for (let f of forms) {
+                f.rings = [];
+                f.filledBias = constrain(params.filledAmount + rndRange(-0.2, 0.2), 0, 0.95);
+
+                // spacing driven by user params: base gap scale (ringSpacing) and the
+                // growth curve between successive rings (spacingGrowth), echoing
+                // tree-ring dendrochronology and mitotic membrane spacing
+                let ringCount = Math.max(2, Math.round((f.r / 14) * params.ringDensity));
+                let radii = [];
+                let cursor = f.r;
+                let step = f.r * 0.12 * params.ringSpacing;
+                for (let i = 0; i < ringCount && cursor > f.r * 0.06; i++) {
+                    radii.push(cursor);
+                    let jitter = 1 + (noise(f.phaseSeed, i * 0.6) - 0.5) * 0.5;
+                    step *= (params.spacingGrowth + (noise(i * 0.3, f.phaseSeed) - 0.5) * 0.25);
+                    step = constrain(step, f.r * 0.02 * params.ringSpacing, f.r * 0.22 * params.ringSpacing);
+                    cursor -= step * jitter;
+                }
+                radii.sort((a, b) => a - b);
+
+                let prevR = 0;
+                for (let i = 0; i < radii.length; i++) {
+                    let useSecondary = (i % 2 === 1) !== (rnd() < f.accentChance);
+                    let colIdx = useSecondary ? f.secondary : f.primary;
+                    let colIdx2 = useSecondary ? f.primary : f.secondary;
+                    let isBold = (i === f.boldRingIndex);
+                    let baseWeight = map(f.r, 3, params.maxRadius, 0.5, 3.2, true);
+
+                    let roll = rnd();
+                    let mode = 'outline';
+                    if (roll < f.filledBias * 0.6) mode = 'filled';
+                    else if (roll < f.filledBias) mode = 'gradient';
+
+                    let weight, alpha;
+                    if (mode === 'outline') {
+                        weight = isBold ? baseWeight * rndRange(2.0, 3.2) : baseWeight * rndRange(0.5, 1.15);
+                        alpha = rndRange(150, 235);
+                    } else {
+                        weight = Math.max(1.2, (radii[i] - prevR) * rndRange(0.9, 1.05));
+                        alpha = rndRange(190, 255);
+                    }
+
+                    f.rings.push({
+                        radius: radii[i], innerRadius: prevR,
+                        colIdx, colIdx2, mode, weight, alpha,
+                        gradIdxs: mode === 'gradient' ? buildGradIdxs(colIdx, colIdx2) : null,
+                        glow: rnd() < params.glowChance
+                    });
+                    prevR = radii[i];
+                }
+            }
+        }
+
+        // Build a multi-stop color index sequence for richer gradient bands
+        function buildGradIdxs(colIdx, colIdx2) {
+            let n = Math.round(params.gradientComplexity);
+            let paletteLen = params.colorPalette.length;
+            let idxs = [colIdx];
+            for (let s = 1; s < n - 1; s++) idxs.push(Math.floor(rnd() * paletteLen));
+            if (n > 1) idxs.push(colIdx2);
+            return idxs;
+        }
+
+        function drawRingStroke(f, radius, weight, col) {
+            noFill();
+            strokeWeight(weight);
+            stroke(col);
+            circle(f.x, f.y, radius * 2);
+        }
+
+        function drawRingDisc(f, radius, col) {
+            noStroke();
+            fill(col);
+            circle(f.x, f.y, radius * 2);
+        }
+
+        function hexWithAlpha(hex, alpha255) {
+            let c = color(hex);
+            return `rgba(${red(c)}, ${green(c)}, ${blue(c)}, ${alpha255 / 255})`;
+        }
+
+        // Gradient-filled annulus drawn with raw canvas 2D path so it can carry
+        // a true radial, multi-stop color blend across several palette hues
+        function drawRingAnnulusGradient(f, innerR, outerR, hexStops, alpha255) {
+            let ctx = drawingContext;
+            ctx.save();
+            let grad = ctx.createRadialGradient(f.x, f.y, Math.max(innerR, 0.001), f.x, f.y, outerR);
+            let n = hexStops.length;
+            for (let i = 0; i < n; i++) {
+                let pos = n === 1 ? 0 : i / (n - 1);
+                grad.addColorStop(constrain(pos, 0, 1), hexWithAlpha(hexStops[i], alpha255));
+            }
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, outerR, 0, Math.PI * 2, false);
+            ctx.arc(f.x, f.y, Math.max(innerR, 0.0001), 0, Math.PI * 2, true);
+            ctx.fill('evenodd');
+            ctx.restore();
+        }
+
+        // Cheap glow: a few translucent, wider strokes behind the ring instead of
+        // an expensive per-shape canvas blur filter (which tanked performance
+        // when applied broadly across hundreds of forms)
+        function drawGlowHalo(f, radius, hex, alpha) {
+            if (params.glowIntensity <= 0) return;
+            noFill();
+            let haloSteps = 3;
+            for (let i = haloSteps; i >= 1; i--) {
+                let spread = i * (params.glowIntensity * 0.6);
+                let a = alpha * (0.16 / i);
+                stroke(colorFromHex(hex, a));
+                strokeWeight(spread * 2);
+                circle(f.x, f.y, radius * 2);
+            }
+        }
+
+        function renderComposition() {
+            computeRenderPalette();
+
+            let bg = color(params.backgroundColor);
+            background(bg);
+
+            for (let f of forms) {
+                for (let ring of f.rings) {
+                    let alpha = ring.alpha;
+
+                    if (ring.mode === 'filled') {
+                        let hex = renderPalette[ring.colIdx % renderPalette.length];
+                        if (ring.glow) drawGlowHalo(f, ring.radius, hex, alpha);
+                        let col = colorFromHex(hex, alpha);
+                        if (ring.innerRadius < 0.001) {
+                            drawRingDisc(f, ring.radius, col);
+                        } else {
+                            drawRingStroke(f, (ring.radius + ring.innerRadius) / 2, ring.weight, col);
+                        }
+                    } else if (ring.mode === 'gradient') {
+                        let hexStops = ring.gradIdxs.map(i => renderPalette[i % renderPalette.length]);
+                        if (ring.glow) drawGlowHalo(f, ring.radius, hexStops[0], alpha);
+                        drawRingAnnulusGradient(f, ring.innerRadius, ring.radius, hexStops, alpha);
+                    } else {
+                        let hex = renderPalette[ring.colIdx % renderPalette.length];
+                        if (ring.glow) drawGlowHalo(f, ring.radius, hex, alpha);
+                        let col = colorFromHex(hex, alpha);
+                        drawRingStroke(f, ring.radius, ring.weight, col);
+                    }
+                }
+
+                if (f.nucleus) {
+                    let nc = colorFromPalette(f.primary, 255 * 0.9);
+                    noStroke();
+                    fill(nc);
+                    circle(f.x, f.y, f.r * 0.05 + 1.5);
+                }
+            }
+        }
+
+        function draw() {
+            noLoop();
+        }
+
+        function colorFromHex(hex, alpha) {
+            let c = color(hex);
+            c.setAlpha(alpha);
+            return c;
+        }
+
+        function colorFromPalette(idx, alpha) {
+            return colorFromHex(renderPalette[idx % renderPalette.length], alpha);
+        }
+
+        // --- plain-JS hue rotation (independent of p5 colorMode state) ---
+        function hexToRgb(hex) {
+            hex = hex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(ch => ch + ch).join('');
+            let num = parseInt(hex, 16);
+            return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+        }
+        function rgbToHexStr(r, g, b) {
+            return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+        }
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            if (max === min) { h = s = 0; }
+            else {
+                let d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    default: h = (r - g) / d + 4;
+                }
+                h /= 6;
+            }
+            return { h, s, l };
+        }
+        function hslToRgb(h, s, l) {
+            let r, g, b;
+            if (s === 0) { r = g = b = l; }
+            else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1 / 6) return p + (q - p) * 6 * t;
+                    if (t < 1 / 2) return q;
+                    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                    return p;
+                };
+                let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                let p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1 / 3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1 / 3);
+            }
+            return { r: r * 255, g: g * 255, b: b * 255 };
+        }
+        function rotateHueHex(hex, degrees) {
+            let { r, g, b } = hexToRgb(hex);
+            let { h, s, l } = rgbToHsl(r, g, b);
+            h = ((h + degrees / 360) % 1 + 1) % 1;
+            let rgb = hslToRgb(h, s, l);
+            return rgbToHexStr(rgb.r, rgb.g, rgb.b);
+        }
+        function computeRenderPalette() {
+            let shift = ((params.colorCycleHue % 360) + 360) % 360;
+            renderPalette = shift === 0 ? params.colorPalette.slice()
+                : params.colorPalette.map(hex => rotateHueHex(hex, shift));
+        }
+
+        function downloadArt() {
+            saveCanvas('concentric-bloom-seed-' + params.seed, 'png');
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // UI CONTROL HANDLERS - CUSTOMIZE FOR YOUR PARAMETERS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function updateParam(paramName, value) {
+            params[paramName] = parseFloat(value);
+            document.getElementById(paramName + '-value').textContent = value;
+
+            let lightweight = ['colorCycleHue', 'glowIntensity'];
+            if (lightweight.includes(paramName)) {
+                renderComposition();
+            } else {
+                initializeSystem();
+            }
+        }
+
+        function renderPaletteGrid() {
+            let grid = document.getElementById('paletteGrid');
+            grid.innerHTML = params.colorPalette.map((hex, i) =>
+                `<div class="swatch" style="background:${hex};"><input type="color" value="${hex}" oninput="updatePaletteColor(${i}, this.value)"></div>`
+            ).join('');
+        }
+
+        function updatePaletteColor(idx, value) {
+            params.colorPalette[idx] = value;
+            let swatches = document.querySelectorAll('#paletteGrid .swatch');
+            if (swatches[idx]) swatches[idx].style.background = value;
+            initializeSystem();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SEED CONTROL FUNCTIONS - ALWAYS KEEP THESE
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function updateSeedDisplay() {
+            document.getElementById('seed-input').value = params.seed;
+        }
+
+        function updateSeed() {
+            let input = document.getElementById('seed-input');
+            let newSeed = parseInt(input.value);
+            if (newSeed && newSeed > 0) {
+                params.seed = newSeed;
+                initializeSystem();
+            } else {
+                // Reset to current seed if invalid
+                updateSeedDisplay();
+            }
+        }
+
+        function previousSeed() {
+            params.seed = Math.max(1, params.seed - 1);
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        function nextSeed() {
+            params.seed = params.seed + 1;
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        function randomSeedAndUpdate() {
+            params.seed = Math.floor(Math.random() * 999999) + 1;
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        function resetParameters() {
+            stopAllAnimations();
+
+            params = {...defaultParams, colorPalette: [...defaultParams.colorPalette]};
+
+            document.getElementById('formCount').value = params.formCount;
+            document.getElementById('formCount-value').textContent = params.formCount;
+            document.getElementById('maxRadius').value = params.maxRadius;
+            document.getElementById('maxRadius-value').textContent = params.maxRadius;
+            document.getElementById('overlap').value = params.overlap;
+            document.getElementById('overlap-value').textContent = params.overlap;
+            document.getElementById('ringDensity').value = params.ringDensity;
+            document.getElementById('ringDensity-value').textContent = params.ringDensity;
+            document.getElementById('nestProb').value = params.nestProb;
+            document.getElementById('nestProb-value').textContent = params.nestProb;
+            document.getElementById('filledAmount').value = params.filledAmount;
+            document.getElementById('filledAmount-value').textContent = params.filledAmount;
+            document.getElementById('gradientComplexity').value = params.gradientComplexity;
+            document.getElementById('gradientComplexity-value').textContent = params.gradientComplexity;
+            document.getElementById('ringSpacing').value = params.ringSpacing;
+            document.getElementById('ringSpacing-value').textContent = params.ringSpacing;
+            document.getElementById('spacingGrowth').value = params.spacingGrowth;
+            document.getElementById('spacingGrowth-value').textContent = params.spacingGrowth;
+            document.getElementById('glowChance').value = params.glowChance;
+            document.getElementById('glowChance-value').textContent = params.glowChance;
+            document.getElementById('glowIntensity').value = params.glowIntensity;
+            document.getElementById('glowIntensity-value').textContent = params.glowIntensity;
+
+            document.getElementById('bgColor').value = params.backgroundColor;
+            document.querySelector('.bg-swatch-row .swatch').style.background = params.backgroundColor;
+            document.getElementById('colorCycleHue').value = params.colorCycleHue;
+            document.getElementById('colorCycleHue-value').textContent = params.colorCycleHue;
+
+            renderPaletteGrid();
+
+            cycleParamIds.forEach(paramName => {
+                const [lo, hi] = defaultAnimRanges[paramName];
+                setDualRange(paramName, lo, hi);
+            });
+
+            document.getElementById('canvasPreset').value = 'fit';
+            computeCanvasSizeForPreset('fit');
+            resizeCanvas(params.canvasWidth, params.canvasHeight);
+
+            updateSeedDisplay();
+            initializeSystem();
+        }
+
+        // Initialize UI on load
+        window.addEventListener('load', function() {
+            updateSeedDisplay();
+            cycleParamIds.forEach(paramName => renderDualRangeFill(paramName));
+        });
+    </script>
 </body>
 </html>
