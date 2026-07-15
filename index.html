@@ -140,6 +140,12 @@
             margin-bottom: 6px;
         }
 
+        .param-btns {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         .slider-container {
             display: flex;
             align-items: center;
@@ -215,6 +221,14 @@
             border-color: var(--accent);
             color: #0c0c10;
             animation: anim-pulse 1.4s ease-in-out infinite;
+        }
+
+        .anim-toggle.dice-mini {
+            font-size: 10px;
+        }
+
+        .anim-toggle.dice-mini:hover {
+            border-color: var(--accent-2);
         }
 
         @keyframes anim-pulse {
@@ -496,10 +510,8 @@
                         <span class="value-display" id="animSpeed-value">0.4</span>
                     </div>
                 </div>
+                <p style="font-size:11.5px;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">Tap 🎲 next to any parameter below to randomize its cycle range and set it in motion.</p>
                 <div class="button-row">
-                    <button class="button primary dice-button" onclick="randomizeCycles()">🎲 Randomize &amp; Cycle All</button>
-                </div>
-                <div class="button-row" style="margin-top: 8px;">
                     <button class="button" onclick="stopAllAnimations()">■ Stop All Cycles</button>
                 </div>
             </div>
@@ -509,7 +521,7 @@
                 <h3>Composition</h3>
 
                 <div class="control-group">
-                    <label>Form Density <button class="anim-toggle" id="anim-btn-formCount" onclick="toggleAnim('formCount')" title="Cycle this parameter">⟲</button></label>
+                    <label>Form Density <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('formCount')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-formCount" onclick="toggleAnim('formCount')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="formCount" min="60" max="260" step="5" value="150" oninput="updateParam('formCount', this.value)">
                         <span class="value-display" id="formCount-value">150</span>
@@ -526,7 +538,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Max Scale <button class="anim-toggle" id="anim-btn-maxRadius" onclick="toggleAnim('maxRadius')" title="Cycle this parameter">⟲</button></label>
+                    <label>Max Scale <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('maxRadius')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-maxRadius" onclick="toggleAnim('maxRadius')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="maxRadius" min="180" max="480" step="10" value="360" oninput="updateParam('maxRadius', this.value)">
                         <span class="value-display" id="maxRadius-value">360</span>
@@ -543,7 +555,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Overlap Fluidity <button class="anim-toggle" id="anim-btn-overlap" onclick="toggleAnim('overlap')" title="Cycle this parameter">⟲</button></label>
+                    <label>Overlap Fluidity <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('overlap')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-overlap" onclick="toggleAnim('overlap')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="overlap" min="0" max="0.6" step="0.02" value="0.28" oninput="updateParam('overlap', this.value)">
                         <span class="value-display" id="overlap-value">0.28</span>
@@ -560,7 +572,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Ring Density <button class="anim-toggle" id="anim-btn-ringDensity" onclick="toggleAnim('ringDensity')" title="Cycle this parameter">⟲</button></label>
+                    <label>Ring Density <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('ringDensity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-ringDensity" onclick="toggleAnim('ringDensity')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="ringDensity" min="0.5" max="2.2" step="0.05" value="1.2" oninput="updateParam('ringDensity', this.value)">
                         <span class="value-display" id="ringDensity-value">1.2</span>
@@ -577,7 +589,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Nesting Probability <button class="anim-toggle" id="anim-btn-nestProb" onclick="toggleAnim('nestProb')" title="Cycle this parameter">⟲</button></label>
+                    <label>Nesting Probability <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('nestProb')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-nestProb" onclick="toggleAnim('nestProb')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="nestProb" min="0" max="0.8" step="0.02" value="0.4" oninput="updateParam('nestProb', this.value)">
                         <span class="value-display" id="nestProb-value">0.4</span>
@@ -599,7 +611,7 @@
                 <h3>Rings &amp; Fill</h3>
 
                 <div class="control-group">
-                    <label>Filled Ring Amount <button class="anim-toggle" id="anim-btn-filledAmount" onclick="toggleAnim('filledAmount')" title="Cycle this parameter">⟲</button></label>
+                    <label>Filled Ring Amount <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('filledAmount')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-filledAmount" onclick="toggleAnim('filledAmount')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="filledAmount" min="0" max="0.9" step="0.05" value="0.45" oninput="updateParam('filledAmount', this.value)">
                         <span class="value-display" id="filledAmount-value">0.45</span>
@@ -616,7 +628,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Gradient Complexity <button class="anim-toggle" id="anim-btn-gradientComplexity" onclick="toggleAnim('gradientComplexity')" title="Cycle this parameter">⟲</button></label>
+                    <label>Gradient Complexity <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('gradientComplexity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-gradientComplexity" onclick="toggleAnim('gradientComplexity')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="gradientComplexity" min="2" max="5" step="1" value="3" oninput="updateParam('gradientComplexity', this.value)">
                         <span class="value-display" id="gradientComplexity-value">3</span>
@@ -633,7 +645,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Ring Spacing <button class="anim-toggle" id="anim-btn-ringSpacing" onclick="toggleAnim('ringSpacing')" title="Cycle this parameter">⟲</button></label>
+                    <label>Ring Spacing <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('ringSpacing')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-ringSpacing" onclick="toggleAnim('ringSpacing')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="ringSpacing" min="0.4" max="2.5" step="0.05" value="1" oninput="updateParam('ringSpacing', this.value)">
                         <span class="value-display" id="ringSpacing-value">1</span>
@@ -650,7 +662,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Spacing Growth <button class="anim-toggle" id="anim-btn-spacingGrowth" onclick="toggleAnim('spacingGrowth')" title="Cycle this parameter">⟲</button></label>
+                    <label>Spacing Growth <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('spacingGrowth')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-spacingGrowth" onclick="toggleAnim('spacingGrowth')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="spacingGrowth" min="0.3" max="0.95" step="0.02" value="0.62" oninput="updateParam('spacingGrowth', this.value)">
                         <span class="value-display" id="spacingGrowth-value">0.62</span>
@@ -672,7 +684,7 @@
                 <h3>Glow</h3>
 
                 <div class="control-group">
-                    <label>Glow Rings <button class="anim-toggle" id="anim-btn-glowChance" onclick="toggleAnim('glowChance')" title="Cycle this parameter">⟲</button></label>
+                    <label>Glow Rings <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowChance')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowChance" onclick="toggleAnim('glowChance')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="glowChance" min="0" max="0.6" step="0.02" value="0.15" oninput="updateParam('glowChance', this.value)">
                         <span class="value-display" id="glowChance-value">0.15</span>
@@ -689,7 +701,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Glow Intensity <button class="anim-toggle" id="anim-btn-glowIntensity" onclick="toggleAnim('glowIntensity')" title="Cycle this parameter">⟲</button></label>
+                    <label>Glow Intensity <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowIntensity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowIntensity" onclick="toggleAnim('glowIntensity')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="glowIntensity" min="0" max="12" step="1" value="6" oninput="updateParam('glowIntensity', this.value)">
                         <span class="value-display" id="glowIntensity-value">6</span>
@@ -736,10 +748,19 @@
                 </div>
 
                 <div class="control-group">
-                    <label>Cycle Colors</label>
+                    <label>Cycle Colors <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('colorCycleHue')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-colorCycleHue" onclick="toggleAnim('colorCycleHue')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
                         <input type="range" id="colorCycleHue" min="0" max="360" step="1" value="0" oninput="updateParam('colorCycleHue', this.value)">
                         <span class="value-display" id="colorCycleHue-value">0</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-colorCycleHue">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-colorCycleHue-range"></div>
+                            <input type="range" id="colorCycleHue-from" min="0" max="360" step="1" value="0" oninput="updateDualRange('colorCycleHue', this)">
+                            <input type="range" id="colorCycleHue-to" min="0" max="360" step="1" value="360" oninput="updateDualRange('colorCycleHue', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="colorCycleHue-from-label">0</span><span id="colorCycleHue-to-label">360</span></div>
                     </div>
                 </div>
 
@@ -808,7 +829,7 @@
         // every active cycle so we only ever trigger one recompute per tick, even
         // if several parameters are cycling at once.
 
-        const lightweightAnimParams = ['glowIntensity']; // safe to re-render without full repack
+        const lightweightAnimParams = ['glowIntensity', 'colorCycleHue']; // safe to re-render without full repack
 
         let activeAnimations = {};   // paramName -> true
         let animStartTimes = {};     // paramName -> performance.now() at toggle-on
@@ -823,13 +844,13 @@
         // All parameters that can be cycled, with their default from/to range
         // (used by both the initial page load and "Reset").
         const cycleParamIds = ['formCount', 'maxRadius', 'overlap', 'ringDensity', 'nestProb',
-            'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity'];
+            'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity', 'colorCycleHue'];
 
         const defaultAnimRanges = {
             formCount: [100, 220], maxRadius: [210, 250], overlap: [0.1, 0.45],
             ringDensity: [0.8, 1.8], nestProb: [0.1, 0.6], filledAmount: [0.15, 0.7],
             gradientComplexity: [2, 5], ringSpacing: [0.6, 1.8], spacingGrowth: [0.4, 0.85],
-            glowChance: [0.05, 0.4], glowIntensity: [2, 10]
+            glowChance: [0.05, 0.4], glowIntensity: [2, 10], colorCycleHue: [0, 360]
         };
 
         // Keeps the two handles from crossing, updates the little numeric
@@ -870,35 +891,34 @@
             renderDualRangeFill(paramName);
         }
 
-        // Dice button: picks a fresh random from/to span for every cyclable
-        // parameter (at least ~20% of its slider's range apart, so the cycle
-        // is always visible) and immediately activates all of them together.
-        function randomizeCycles() {
-            cycleParamIds.forEach(paramName => {
-                const slider = document.getElementById(paramName);
-                const min = parseFloat(slider.min), max = parseFloat(slider.max), step = parseFloat(slider.step) || 1;
-                const span = max - min;
-                const minGap = Math.max(step, span * 0.2);
+        // Mini dice button: picks a fresh random from/to span for just this one
+        // parameter (at least ~20% of its slider's range apart, so the cycle is
+        // always visible) and activates cycling for it immediately.
+        function randomizeCycleParam(paramName) {
+            const slider = document.getElementById(paramName);
+            const min = parseFloat(slider.min), max = parseFloat(slider.max), step = parseFloat(slider.step) || 1;
+            const span = max - min;
+            const minGap = Math.max(step, span * 0.2);
 
-                let a = min + Math.random() * span;
-                let b = min + Math.random() * span;
-                if (Math.abs(a - b) < minGap) b = a + minGap;
+            let a = min + Math.random() * span;
+            let b = min + Math.random() * span;
+            if (Math.abs(a - b) < minGap) b = a + minGap;
 
-                let lo = Math.min(a, b), hi = Math.max(a, b);
-                lo = Math.max(min, Math.round(lo / step) * step);
-                hi = Math.min(max, Math.round(hi / step) * step);
-                if (hi <= lo) hi = Math.min(max, lo + step);
+            let lo = Math.min(a, b), hi = Math.max(a, b);
+            lo = Math.max(min, Math.round(lo / step) * step);
+            hi = Math.min(max, Math.round(hi / step) * step);
+            if (hi <= lo) hi = Math.min(max, lo + step);
 
-                setDualRange(paramName, lo, hi);
+            setDualRange(paramName, lo, hi);
 
-                if (!activeAnimations[paramName]) {
-                    activeAnimations[paramName] = true;
-                    document.getElementById('anim-btn-' + paramName).classList.add('active');
-                    document.getElementById('anim-range-' + paramName).classList.add('visible');
-                }
-                // random phase offset so cycles feel organic instead of lockstep
-                animStartTimes[paramName] = performance.now() - Math.random() * 4000;
-            });
+            if (!activeAnimations[paramName]) {
+                activeAnimations[paramName] = true;
+                document.getElementById('anim-btn-' + paramName).classList.add('active');
+                document.getElementById('anim-range-' + paramName).classList.add('visible');
+            }
+            // small random phase offset so re-rolling a running cycle doesn't
+            // visibly snap back to the same spot in its oscillation
+            animStartTimes[paramName] = performance.now() - Math.random() * 2000;
 
             startAnimLoop();
         }
@@ -934,20 +954,26 @@
 
         function startAnimLoop() {
             if (animLoopHandle) return;
-            // ~11fps: fast enough to read as smooth motion, gentle enough that a
-            // full circle-packing recompute per tick doesn't stutter the UI.
-            animLoopHandle = setInterval(animTick, 90);
+            lastHeavyRebuild = 0;
+            animLoopHandle = requestAnimationFrame(animFrame);
         }
 
         function stopAnimLoop() {
             if (animLoopHandle) {
-                clearInterval(animLoopHandle);
+                cancelAnimationFrame(animLoopHandle);
                 animLoopHandle = null;
             }
         }
 
-        function animTick() {
-            let needsFullRebuild = false;
+        // Full circle-packing is too expensive to redo every animation frame,
+        // so heavy parameters only trigger a rebuild every HEAVY_REBUILD_INTERVAL
+        // ms. Lightweight parameters (hue rotation, glow intensity) just repaint
+        // the existing forms, so those run at full frame rate for smooth motion.
+        let lastHeavyRebuild = 0;
+        const HEAVY_REBUILD_INTERVAL = 110;
+
+        function animFrame(now) {
+            let sawHeavy = false;
 
             for (const paramName in activeAnimations) {
                 const fromEl = document.getElementById(paramName + '-from');
@@ -958,7 +984,7 @@
                 const to = parseFloat(toEl.value);
                 if (isNaN(from) || isNaN(to)) continue;
 
-                const elapsed = (performance.now() - animStartTimes[paramName]) / 1000;
+                const elapsed = (now - animStartTimes[paramName]) / 1000;
                 const phase = 0.5 + 0.5 * Math.sin(elapsed * animSpeed * Math.PI); // 0..1..0 ping-pong
                 const raw = from + (to - from) * phase;
 
@@ -970,11 +996,17 @@
                 document.getElementById(paramName + '-value').textContent = rounded;
                 params[paramName] = rounded;
 
-                if (!lightweightAnimParams.includes(paramName)) needsFullRebuild = true;
+                if (!lightweightAnimParams.includes(paramName)) sawHeavy = true;
             }
 
-            if (needsFullRebuild) initializeSystem();
-            else renderComposition();
+            if (sawHeavy && (now - lastHeavyRebuild >= HEAVY_REBUILD_INTERVAL)) {
+                lastHeavyRebuild = now;
+                initializeSystem(); // rebuilds forms and repaints
+            } else {
+                renderComposition(); // cheap repaint with the latest values every frame
+            }
+
+            animLoopHandle = requestAnimationFrame(animFrame);
         }
 
         // ═══════════════════════════════════════════════════════════════════════
