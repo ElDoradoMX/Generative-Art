@@ -693,34 +693,51 @@
                 <div class="control-group">
                     <label>Glow Rings <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowChance')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowChance" onclick="toggleAnim('glowChance')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
-                        <input type="range" id="glowChance" min="0" max="0.6" step="0.02" value="0.15" oninput="updateParam('glowChance', this.value)">
+                        <input type="range" id="glowChance" min="0" max="1" step="0.02" value="0.15" oninput="updateParam('glowChance', this.value)">
                         <span class="value-display" id="glowChance-value">0.15</span>
                     </div>
                     <div class="anim-range" id="anim-range-glowChance">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
                             <div class="dual-slider-range" id="dual-glowChance-range"></div>
-                            <input type="range" id="glowChance-from" min="0" max="0.6" step="0.02" value="0.05" oninput="updateDualRange('glowChance', this)">
-                            <input type="range" id="glowChance-to" min="0" max="0.6" step="0.02" value="0.4" oninput="updateDualRange('glowChance', this)">
+                            <input type="range" id="glowChance-from" min="0" max="1" step="0.02" value="0.05" oninput="updateDualRange('glowChance', this)">
+                            <input type="range" id="glowChance-to" min="0" max="1" step="0.02" value="0.6" oninput="updateDualRange('glowChance', this)">
                         </div>
-                        <div class="dual-slider-labels"><span id="glowChance-from-label">0.05</span><span id="glowChance-to-label">0.4</span></div>
+                        <div class="dual-slider-labels"><span id="glowChance-from-label">0.05</span><span id="glowChance-to-label">0.6</span></div>
                     </div>
                 </div>
 
                 <div class="control-group">
                     <label>Glow Intensity <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowIntensity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowIntensity" onclick="toggleAnim('glowIntensity')" title="Toggle cycling">⟲</button></span></label>
                     <div class="slider-container">
-                        <input type="range" id="glowIntensity" min="0" max="12" step="1" value="6" oninput="updateParam('glowIntensity', this.value)">
+                        <input type="range" id="glowIntensity" min="0" max="30" step="1" value="6" oninput="updateParam('glowIntensity', this.value)">
                         <span class="value-display" id="glowIntensity-value">6</span>
                     </div>
                     <div class="anim-range" id="anim-range-glowIntensity">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
                             <div class="dual-slider-range" id="dual-glowIntensity-range"></div>
-                            <input type="range" id="glowIntensity-from" min="0" max="12" step="1" value="2" oninput="updateDualRange('glowIntensity', this)">
-                            <input type="range" id="glowIntensity-to" min="0" max="12" step="1" value="10" oninput="updateDualRange('glowIntensity', this)">
+                            <input type="range" id="glowIntensity-from" min="0" max="30" step="1" value="2" oninput="updateDualRange('glowIntensity', this)">
+                            <input type="range" id="glowIntensity-to" min="0" max="30" step="1" value="16" oninput="updateDualRange('glowIntensity', this)">
                         </div>
-                        <div class="dual-slider-labels"><span id="glowIntensity-from-label">2</span><span id="glowIntensity-to-label">10</span></div>
+                        <div class="dual-slider-labels"><span id="glowIntensity-from-label">2</span><span id="glowIntensity-to-label">16</span></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Glow Layers <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowSteps')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowSteps" onclick="toggleAnim('glowSteps')" title="Toggle cycling">⟲</button></span></label>
+                    <div class="slider-container">
+                        <input type="range" id="glowSteps" min="1" max="8" step="1" value="3" oninput="updateParam('glowSteps', this.value)">
+                        <span class="value-display" id="glowSteps-value">3</span>
+                    </div>
+                    <div class="anim-range" id="anim-range-glowSteps">
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-glowSteps-range"></div>
+                            <input type="range" id="glowSteps-from" min="1" max="8" step="1" value="2" oninput="updateDualRange('glowSteps', this)">
+                            <input type="range" id="glowSteps-to" min="1" max="8" step="1" value="6" oninput="updateDualRange('glowSteps', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="glowSteps-from-label">2</span><span id="glowSteps-to-label">6</span></div>
                     </div>
                 </div>
             </div>
@@ -814,6 +831,7 @@
             spacingGrowth: 0.62,
             glowChance: 0.15,
             glowIntensity: 6,
+            glowSteps: 3,
             backgroundColor: '#ffffff',
             canvasPreset: 'fit',
             canvasWidth: 1200,
@@ -836,7 +854,7 @@
         // every active cycle so we only ever trigger one recompute per tick, even
         // if several parameters are cycling at once.
 
-        const lightweightAnimParams = ['glowIntensity', 'colorCycleHue']; // safe to re-render without full repack
+        const lightweightAnimParams = ['glowIntensity', 'glowSteps', 'colorCycleHue']; // safe to re-render without full repack
 
         let activeAnimations = {};   // paramName -> true
         let animStartTimes = {};     // paramName -> performance.now() at toggle-on
@@ -857,13 +875,13 @@
         // All parameters that can be cycled, with their default from/to range
         // (used by both the initial page load and "Reset").
         const cycleParamIds = ['formCount', 'maxRadius', 'overlap', 'ringDensity', 'nestProb',
-            'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity', 'colorCycleHue'];
+            'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity', 'glowSteps', 'colorCycleHue'];
 
         const defaultAnimRanges = {
             formCount: [100, 220], maxRadius: [210, 250], overlap: [0.1, 0.45],
             ringDensity: [0.8, 1.8], nestProb: [0.1, 0.6], filledAmount: [0.15, 0.7],
             gradientComplexity: [2, 5], ringSpacing: [0.6, 1.8], spacingGrowth: [0.4, 0.85],
-            glowChance: [0.05, 0.4], glowIntensity: [2, 10], colorCycleHue: [0, 360]
+            glowChance: [0.05, 0.6], glowIntensity: [2, 16], glowSteps: [2, 6], colorCycleHue: [0, 360]
         };
 
         // Keeps the two handles from crossing, updates the little numeric
@@ -1234,7 +1252,11 @@
             return true;
         }
 
-        // Plant smaller children fully inside larger parents: true nesting
+        // Plant smaller children sharing the exact center of larger parents:
+        // true concentric nesting. Every child's own ring system is built
+        // around the same origin point as its parent, so the child's rings
+        // read as an inner continuation of the parent's rings rather than a
+        // separate shape drifting off-axis.
         function addNestedSatellites() {
             let base = forms.slice();
             for (let parent of base) {
@@ -1242,14 +1264,14 @@
                 if (rnd() > params.nestProb) continue;
 
                 let count = 1 + Math.floor(rnd() * 3);
-                for (let i = 0; i < count; i++) {
-                    let childR = parent.r * rndRange(0.14, 0.5);
-                    let maxOffset = Math.max(0, parent.r * 0.92 - childR);
-                    let ang = rnd() * TWO_PI;
-                    let off = rnd() * maxOffset;
-                    let cx = parent.x + cos(ang) * off;
-                    let cy = parent.y + sin(ang) * off;
-                    forms.push(makeForm(cx, cy, childR, true));
+                // distinct radii, largest first, so nested children stack
+                // as clean concentric layers instead of overlapping randomly
+                let radii = [];
+                for (let i = 0; i < count; i++) radii.push(parent.r * rndRange(0.14, 0.5));
+                radii.sort((a, b) => b - a);
+
+                for (let childR of radii) {
+                    forms.push(makeForm(parent.x, parent.y, childR, true));
                 }
             }
         }
@@ -1376,7 +1398,7 @@
         function drawGlowHalo(g, f, radius, hex, alpha) {
             if (params.glowIntensity <= 0) return;
             g.noFill();
-            let haloSteps = 3;
+            let haloSteps = Math.max(1, Math.round(params.glowSteps));
             for (let i = haloSteps; i >= 1; i--) {
                 let spread = i * (params.glowIntensity * 0.6);
                 let a = alpha * (0.16 / i);
@@ -1514,7 +1536,7 @@
             params[paramName] = parseFloat(value);
             document.getElementById(paramName + '-value').textContent = value;
 
-            let lightweight = ['colorCycleHue', 'glowIntensity'];
+            let lightweight = ['colorCycleHue', 'glowIntensity', 'glowSteps'];
             if (lightweight.includes(paramName)) {
                 renderComposition();
             } else {
@@ -1607,6 +1629,8 @@
             document.getElementById('glowChance-value').textContent = params.glowChance;
             document.getElementById('glowIntensity').value = params.glowIntensity;
             document.getElementById('glowIntensity-value').textContent = params.glowIntensity;
+            document.getElementById('glowSteps').value = params.glowSteps;
+            document.getElementById('glowSteps-value').textContent = params.glowSteps;
 
             document.getElementById('bgColor').value = params.backgroundColor;
             document.querySelector('.bg-swatch-row .swatch').style.background = params.backgroundColor;
