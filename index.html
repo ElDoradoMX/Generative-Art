@@ -510,6 +510,13 @@
                         <span class="value-display" id="animSpeed-value">0.4</span>
                     </div>
                 </div>
+                <div class="control-group" style="margin-bottom: 10px;">
+                    <label>Transition Blend</label>
+                    <div class="slider-container">
+                        <input type="range" id="blendAmount" min="0" max="100" step="5" value="60" oninput="updateBlendAmount(this.value)">
+                        <span class="value-display" id="blendAmount-value">60%</span>
+                    </div>
+                </div>
                 <p style="font-size:11.5px;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">Tap 🎲 next to any parameter below to randomize its cycle range and set it in motion.</p>
                 <div class="button-row">
                     <button class="button" onclick="stopAllAnimations()">■ Stop All Cycles</button>
@@ -835,10 +842,16 @@
         let animStartTimes = {};     // paramName -> performance.now() at toggle-on
         let animLoopHandle = null;
         let animSpeed = 0.4;
+        let blendAmount = 60; // 0-100%, how much a heavy rebuild crossfades into the next frame
 
         function updateAnimSpeed(value) {
             animSpeed = parseFloat(value);
             document.getElementById('animSpeed-value').textContent = value;
+        }
+
+        function updateBlendAmount(value) {
+            blendAmount = parseFloat(value);
+            document.getElementById('blendAmount-value').textContent = value + '%';
         }
 
         // All parameters that can be cycled, with their default from/to range
@@ -963,6 +976,8 @@
                 cancelAnimationFrame(animLoopHandle);
                 animLoopHandle = null;
             }
+            crossfadeActive = false;
+            if (sceneBuffer) image(sceneBuffer, 0, 0);
         }
 
         // Full circle-packing is too expensive to redo every animation frame,
@@ -971,9 +986,15 @@
         // the existing forms, so those run at full frame rate for smooth motion.
         let lastHeavyRebuild = 0;
         const HEAVY_REBUILD_INTERVAL = 110;
+        const MAX_BLEND_MS = 140; // upper bound for the "Transition Blend" slider
+
+        let crossfadeActive = false;
+        let crossfadeStart = 0;
+        let crossfadeDuration = 0;
 
         function animFrame(now) {
             let sawHeavy = false;
+            let sawLightweight = false;
 
             for (const paramName in activeAnimations) {
                 const fromEl = document.getElementById(paramName + '-from');
@@ -997,13 +1018,43 @@
                 params[paramName] = rounded;
 
                 if (!lightweightAnimParams.includes(paramName)) sawHeavy = true;
+                else sawLightweight = true;
             }
 
             if (sawHeavy && (now - lastHeavyRebuild >= HEAVY_REBUILD_INTERVAL)) {
                 lastHeavyRebuild = now;
-                initializeSystem(); // rebuilds forms and repaints
-            } else {
+                // snapshot the scene as it looks right now — this becomes the
+                // "from" side of the crossfade, so the transition always starts
+                // from whatever is actually on screen, even mid-fade
+                prevSceneBuffer.clear();
+                prevSceneBuffer.image(sceneBuffer, 0, 0);
+                initializeSystem(); // rebuilds forms and repaints into sceneBuffer
+
+                crossfadeDuration = (blendAmount / 100) * MAX_BLEND_MS;
+                if (crossfadeDuration > 0) {
+                    crossfadeActive = true;
+                    crossfadeStart = now;
+                } else {
+                    crossfadeActive = false;
+                }
+            } else if (sawLightweight) {
                 renderComposition(); // cheap repaint with the latest values every frame
+            }
+
+            // compositing: bleed the previous frame into the new one while a
+            // crossfade is in flight, otherwise just show the current scene
+            if (crossfadeActive) {
+                let t = (now - crossfadeStart) / crossfadeDuration;
+                if (t >= 1) { t = 1; crossfadeActive = false; }
+                let eased = t * t * (3 - 2 * t); // smoothstep, gentler than linear
+                image(prevSceneBuffer, 0, 0);
+                push();
+                tint(255, eased * 255);
+                image(sceneBuffer, 0, 0);
+                pop();
+                noTint();
+            } else {
+                image(sceneBuffer, 0, 0);
             }
 
             animLoopHandle = requestAnimationFrame(animFrame);
@@ -1017,14 +1068,36 @@
         let rng; // seeded pseudo-random generator (own implementation for total determinism)
         let rngState;
 
+        // The composition is always drawn into sceneBuffer first, then copied to
+        // the visible canvas. This lets animFrame() blend the old buffer
+        // (prevSceneBuffer) into the new one over a few frames instead of
+        // popping instantly whenever a heavy parameter triggers a rebuild.
+        let sceneBuffer, prevSceneBuffer;
+
+        function ensureBuffers() {
+            if (sceneBuffer) sceneBuffer.remove();
+            if (prevSceneBuffer) prevSceneBuffer.remove();
+            sceneBuffer = createGraphics(params.canvasWidth, params.canvasHeight);
+            prevSceneBuffer = createGraphics(params.canvasWidth, params.canvasHeight);
+        }
+
+        // Used for any non-animated change (manual slider drag, seed change,
+        // palette edit, reset, etc.) so those stay instant with no crossfade.
+        function compositeStatic() {
+            crossfadeActive = false;
+            image(sceneBuffer, 0, 0);
+        }
+
         function setup() {
             computeCanvasSizeForPreset('fit');
 
             let canvas = createCanvas(params.canvasWidth, params.canvasHeight);
             canvas.parent('canvas-container');
+            ensureBuffers();
 
             renderPaletteGrid();
             initializeSystem();
+            compositeStatic();
 
             document.querySelector('.loading').style.display = 'none';
         }
@@ -1055,19 +1128,23 @@
         function applyCanvasPreset(preset) {
             computeCanvasSizeForPreset(preset);
             resizeCanvas(params.canvasWidth, params.canvasHeight);
+            ensureBuffers();
             initializeSystem();
+            compositeStatic();
         }
 
         function updateBgColor(value) {
             params.backgroundColor = value;
             document.querySelector('.bg-swatch-row .swatch').style.background = value;
             renderComposition();
+            compositeStatic();
         }
 
         function regenerate() {
             params.seed = Math.floor(Math.random() * 999999) + 1;
             updateSeedDisplay();
             initializeSystem();
+            compositeStatic();
         }
 
         // --- deterministic PRNG (mulberry32) so seeded runs are 100% reproducible ---
@@ -1256,17 +1333,17 @@
             return idxs;
         }
 
-        function drawRingStroke(f, radius, weight, col) {
-            noFill();
-            strokeWeight(weight);
-            stroke(col);
-            circle(f.x, f.y, radius * 2);
+        function drawRingStroke(g, f, radius, weight, col) {
+            g.noFill();
+            g.strokeWeight(weight);
+            g.stroke(col);
+            g.circle(f.x, f.y, radius * 2);
         }
 
-        function drawRingDisc(f, radius, col) {
-            noStroke();
-            fill(col);
-            circle(f.x, f.y, radius * 2);
+        function drawRingDisc(g, f, radius, col) {
+            g.noStroke();
+            g.fill(col);
+            g.circle(f.x, f.y, radius * 2);
         }
 
         function hexWithAlpha(hex, alpha255) {
@@ -1276,8 +1353,8 @@
 
         // Gradient-filled annulus drawn with raw canvas 2D path so it can carry
         // a true radial, multi-stop color blend across several palette hues
-        function drawRingAnnulusGradient(f, innerR, outerR, hexStops, alpha255) {
-            let ctx = drawingContext;
+        function drawRingAnnulusGradient(g, f, innerR, outerR, hexStops, alpha255) {
+            let ctx = g.drawingContext;
             ctx.save();
             let grad = ctx.createRadialGradient(f.x, f.y, Math.max(innerR, 0.001), f.x, f.y, outerR);
             let n = hexStops.length;
@@ -1296,24 +1373,25 @@
         // Cheap glow: a few translucent, wider strokes behind the ring instead of
         // an expensive per-shape canvas blur filter (which tanked performance
         // when applied broadly across hundreds of forms)
-        function drawGlowHalo(f, radius, hex, alpha) {
+        function drawGlowHalo(g, f, radius, hex, alpha) {
             if (params.glowIntensity <= 0) return;
-            noFill();
+            g.noFill();
             let haloSteps = 3;
             for (let i = haloSteps; i >= 1; i--) {
                 let spread = i * (params.glowIntensity * 0.6);
                 let a = alpha * (0.16 / i);
-                stroke(colorFromHex(hex, a));
-                strokeWeight(spread * 2);
-                circle(f.x, f.y, radius * 2);
+                g.stroke(colorFromHex(hex, a));
+                g.strokeWeight(spread * 2);
+                g.circle(f.x, f.y, radius * 2);
             }
         }
 
-        function renderComposition() {
+        function renderComposition(target) {
+            let g = target || sceneBuffer;
             computeRenderPalette();
 
             let bg = color(params.backgroundColor);
-            background(bg);
+            g.background(bg);
 
             for (let f of forms) {
                 for (let ring of f.rings) {
@@ -1321,30 +1399,30 @@
 
                     if (ring.mode === 'filled') {
                         let hex = renderPalette[ring.colIdx % renderPalette.length];
-                        if (ring.glow) drawGlowHalo(f, ring.radius, hex, alpha);
+                        if (ring.glow) drawGlowHalo(g, f, ring.radius, hex, alpha);
                         let col = colorFromHex(hex, alpha);
                         if (ring.innerRadius < 0.001) {
-                            drawRingDisc(f, ring.radius, col);
+                            drawRingDisc(g, f, ring.radius, col);
                         } else {
-                            drawRingStroke(f, (ring.radius + ring.innerRadius) / 2, ring.weight, col);
+                            drawRingStroke(g, f, (ring.radius + ring.innerRadius) / 2, ring.weight, col);
                         }
                     } else if (ring.mode === 'gradient') {
                         let hexStops = ring.gradIdxs.map(i => renderPalette[i % renderPalette.length]);
-                        if (ring.glow) drawGlowHalo(f, ring.radius, hexStops[0], alpha);
-                        drawRingAnnulusGradient(f, ring.innerRadius, ring.radius, hexStops, alpha);
+                        if (ring.glow) drawGlowHalo(g, f, ring.radius, hexStops[0], alpha);
+                        drawRingAnnulusGradient(g, f, ring.innerRadius, ring.radius, hexStops, alpha);
                     } else {
                         let hex = renderPalette[ring.colIdx % renderPalette.length];
-                        if (ring.glow) drawGlowHalo(f, ring.radius, hex, alpha);
+                        if (ring.glow) drawGlowHalo(g, f, ring.radius, hex, alpha);
                         let col = colorFromHex(hex, alpha);
-                        drawRingStroke(f, ring.radius, ring.weight, col);
+                        drawRingStroke(g, f, ring.radius, ring.weight, col);
                     }
                 }
 
                 if (f.nucleus) {
                     let nc = colorFromPalette(f.primary, 255 * 0.9);
-                    noStroke();
-                    fill(nc);
-                    circle(f.x, f.y, f.r * 0.05 + 1.5);
+                    g.noStroke();
+                    g.fill(nc);
+                    g.circle(f.x, f.y, f.r * 0.05 + 1.5);
                 }
             }
         }
@@ -1424,7 +1502,7 @@
         }
 
         function downloadArt() {
-            saveCanvas('concentric-bloom-seed-' + params.seed, 'png');
+            sceneBuffer.save('concentric-bloom-seed-' + params.seed + '.png');
         }
 
 
@@ -1442,6 +1520,7 @@
             } else {
                 initializeSystem();
             }
+            compositeStatic();
         }
 
         function renderPaletteGrid() {
@@ -1456,6 +1535,7 @@
             let swatches = document.querySelectorAll('#paletteGrid .swatch');
             if (swatches[idx]) swatches[idx].style.background = value;
             initializeSystem();
+            compositeStatic();
         }
 
         // ═══════════════════════════════════════════════════════════════════════
@@ -1472,6 +1552,7 @@
             if (newSeed && newSeed > 0) {
                 params.seed = newSeed;
                 initializeSystem();
+                compositeStatic();
             } else {
                 // Reset to current seed if invalid
                 updateSeedDisplay();
@@ -1482,18 +1563,21 @@
             params.seed = Math.max(1, params.seed - 1);
             updateSeedDisplay();
             initializeSystem();
+            compositeStatic();
         }
 
         function nextSeed() {
             params.seed = params.seed + 1;
             updateSeedDisplay();
             initializeSystem();
+            compositeStatic();
         }
 
         function randomSeedAndUpdate() {
             params.seed = Math.floor(Math.random() * 999999) + 1;
             updateSeedDisplay();
             initializeSystem();
+            compositeStatic();
         }
 
         function resetParameters() {
@@ -1539,9 +1623,11 @@
             document.getElementById('canvasPreset').value = 'fit';
             computeCanvasSizeForPreset('fit');
             resizeCanvas(params.canvasWidth, params.canvasHeight);
+            ensureBuffers();
 
             updateSeedDisplay();
             initializeSystem();
+            compositeStatic();
         }
 
         // Initialize UI on load
