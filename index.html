@@ -7,25 +7,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════════════════════
-           MODERN BRUTALIST — light theme
-           Off-white/black base, one signal-red + one signal-blue accent,
-           zero border-radius, hard offset shadows instead of blur, a
-           monospace UI voice (this is a parametric instrument, not a
-           lifestyle app), and a floating control panel instead of a
-           layout-pushing sidebar.
+           CLEAN ELEGANT TECH — light, instrument-like, synthesizer-inspired
+           Warm paper-grey stage, soft off-white floating panel, near-black
+           rotary knobs with a single tick, a serif wordmark against a sea
+           of quiet sans labels. Soft blurred elevation, generous radius,
+           nothing hard-edged or graphic-poster about it.
            ═══════════════════════════════════════════════════════════════ */
         :root {
-            --bg: #efeee8;
-            --panel: #fbfbf8;
-            --ink: #111111;
-            --ink-soft: #6b6a63;
-            --line: #111111;
-            --accent: #ff3d1a;
-            --accent-2: #0033ff;
-            --grid-line: rgba(17, 17, 17, 0.07);
+            --page: #edebe4;
+            --panel: #fbfaf7;
+            --well: #f2f0e9;
+            --ink: #1c1b17;
+            --ink-soft: #8d8a7e;
+            --ink-faint: #b9b6a9;
+            --line: #ddd9cc;
+            --line-soft: #e8e5da;
+            --accent: #a9743f;
+            --knob-face-1: #333029;
+            --knob-face-2: #171612;
+            --knob-tick: #f5f2ea;
         }
 
         * {
@@ -40,12 +43,22 @@
         }
 
         body {
-            font-family: 'JetBrains Mono', 'SF Mono', monospace;
-            background:
-                repeating-linear-gradient(0deg, var(--grid-line) 0px, var(--grid-line) 1px, transparent 1px, transparent 32px),
-                repeating-linear-gradient(90deg, var(--grid-line) 0px, var(--grid-line) 1px, transparent 1px, transparent 32px),
-                var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--page);
             color: var(--ink);
+            font-feature-settings: 'tnum' 1;
+        }
+
+        /* Subtle paper grain across the whole stage - the one texture
+           borrowed from the mood references, kept very quiet */
+        .grain {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.035;
+            mix-blend-mode: multiply;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
 
         /* Full-bleed canvas host - the panel floats above this, it never
@@ -61,7 +74,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 28px;
+            padding: 40px;
         }
 
         #canvas-container {
@@ -72,8 +85,8 @@
             justify-content: center;
             overflow: hidden;
             background: white;
-            border: 3px solid var(--line);
-            box-shadow: 10px 10px 0 var(--ink);
+            border-radius: 22px;
+            box-shadow: 0 30px 70px -20px rgba(28, 27, 23, 0.35), 0 2px 0 rgba(28, 27, 23, 0.04);
         }
 
         #canvas-container canvas {
@@ -89,28 +102,26 @@
             align-items: center;
             justify-content: center;
             font-size: 13px;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
             color: var(--ink-soft);
         }
 
         /* ─── Floating panel tab (collapsed state trigger) ─────────────── */
         .panel-tab {
             position: fixed;
-            top: 28px;
-            right: 28px;
+            top: 32px;
+            right: 32px;
             z-index: 20;
-            width: 52px;
-            height: 52px;
-            background: var(--ink);
-            color: var(--panel);
-            border: 3px solid var(--line);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 20px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--panel);
+            color: var(--ink);
+            border: 1px solid var(--line);
+            font-size: 17px;
             line-height: 1;
             cursor: pointer;
-            box-shadow: 5px 5px 0 var(--accent);
-            transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.15s ease;
+            box-shadow: 0 12px 28px -10px rgba(28, 27, 23, 0.3);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
             display: none;
             align-items: center;
             justify-content: center;
@@ -121,49 +132,45 @@
         }
 
         .panel-tab:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 7px 7px 0 var(--accent);
-        }
-
-        .panel-tab:active {
-            transform: translate(0, 0);
-            box-shadow: 2px 2px 0 var(--accent);
+            transform: scale(1.06);
+            background: var(--ink);
+            color: var(--panel);
         }
 
         /* ─── Floating control panel ─────────────────────────────────── */
         .sidebar {
             position: fixed;
-            top: 28px;
-            right: 28px;
-            bottom: 28px;
-            width: 320px;
+            top: 32px;
+            right: 32px;
+            bottom: 32px;
+            width: 336px;
             z-index: 10;
             background: var(--panel);
-            border: 3px solid var(--line);
-            box-shadow: 10px 10px 0 var(--ink);
+            border: 1px solid var(--line);
+            border-radius: 26px;
+            box-shadow: 0 40px 90px -24px rgba(28, 27, 23, 0.4);
             overflow-y: auto;
             overflow-x: hidden;
-            counter-reset: section;
-            transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.18s ease;
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
         }
 
         .sidebar.collapsed {
-            transform: translateX(calc(100% + 48px));
+            transform: translateX(calc(100% + 56px));
             opacity: 0;
             pointer-events: none;
         }
 
         .sidebar::-webkit-scrollbar {
-            width: 10px;
+            width: 8px;
         }
 
         .sidebar::-webkit-scrollbar-track {
-            background: var(--panel);
-            border-left: 1px solid var(--grid-line);
+            background: transparent;
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: var(--ink);
+            background: var(--line);
+            border-radius: 8px;
         }
 
         .panel-head {
@@ -174,51 +181,43 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            background: var(--ink);
-            color: var(--panel);
-            padding: 16px 16px;
-            border-bottom: 3px solid var(--line);
+            background: var(--panel);
+            padding: 22px 22px 16px 22px;
+            border-bottom: 1px solid var(--line-soft);
         }
 
         .wordmark {
-            font-family: 'Unbounded', sans-serif;
-            font-weight: 700;
-            font-size: 15px;
-            line-height: 1.15;
-            letter-spacing: -0.01em;
-            text-transform: uppercase;
-        }
-
-        .wordmark span {
-            display: block;
-            color: var(--accent);
+            font-family: 'Fraunces', serif;
+            font-weight: 500;
+            font-style: italic;
+            font-size: 20px;
+            line-height: 1.1;
+            color: var(--ink);
         }
 
         .panel-close {
             flex-shrink: 0;
             width: 30px;
             height: 30px;
+            border-radius: 50%;
             background: transparent;
-            color: var(--panel);
-            border: 2px solid var(--panel);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 15px;
+            color: var(--ink-soft);
+            border: 1px solid var(--line);
+            font-size: 14px;
             cursor: pointer;
-            transition: background 0.12s ease, color 0.12s ease;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
         }
 
         .panel-close:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: var(--ink);
+            background: var(--ink);
+            border-color: var(--ink);
+            color: var(--panel);
         }
 
         /* ─── Control Sections ──────────────────────────────────────── */
         .control-section {
-            counter-increment: section;
-            margin: 0;
-            padding: 18px 16px;
-            border-bottom: 2px solid var(--line);
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--line-soft);
         }
 
         .control-section:last-child {
@@ -226,196 +225,277 @@
         }
 
         .control-section h3 {
-            font-family: 'Unbounded', sans-serif;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
+            font-family: 'Inter', sans-serif;
+            font-size: 12.5px;
+            font-weight: 600;
             color: var(--ink);
-            margin-bottom: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* ─── Seed Controls (big serif readout, quiet icon nav) ────────── */
+        .seed-display {
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-
-        .control-section h3::before {
-            content: counter(section, decimal-leading-zero);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--panel);
-            background: var(--accent-2);
-            padding: 2px 6px;
-        }
-
-        /* ─── Seed Controls ─────────────────────────────────────────── */
-        .seed-input {
-            width: 100%;
-            background: var(--panel);
-            color: var(--ink);
-            padding: 10px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            font-weight: 600;
             margin-bottom: 10px;
-            border: 2px solid var(--line);
+        }
+
+        .icon-btn {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            background: var(--well);
+            color: var(--ink);
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--ink);
+            border-color: var(--ink);
+            color: var(--panel);
+        }
+
+        .seed-input {
+            flex: 1;
+            width: 100%;
+            background: transparent;
+            color: var(--ink);
+            padding: 4px 2px;
+            font-family: 'Fraunces', serif;
+            font-weight: 500;
+            font-size: 26px;
+            border: none;
+            border-bottom: 1px solid var(--line);
             text-align: center;
+            -moz-appearance: textfield;
+        }
+
+        .seed-input::-webkit-outer-spin-button,
+        .seed-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .seed-input:focus {
             outline: none;
-            background: #fff2ea;
-            box-shadow: 3px 3px 0 var(--accent);
+            border-bottom-color: var(--ink);
         }
 
         .select-input {
             width: 100%;
-            background: var(--panel);
-            padding: 9px 10px;
+            background: var(--well);
+            padding: 10px 12px;
             font-family: inherit;
             font-size: 12.5px;
-            border: 2px solid var(--line);
+            border: 1px solid var(--line);
+            border-radius: 12px;
             color: var(--ink);
             cursor: pointer;
         }
 
         .select-input:focus {
             outline: none;
-            box-shadow: 3px 3px 0 var(--accent-2);
-        }
-
-        .seed-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 8px;
+            border-color: var(--ink);
         }
 
         .regen-button {
             margin-bottom: 0;
         }
 
-        /* ─── Parameter Controls ────────────────────────────────────── */
-        .control-group {
-            margin-bottom: 16px;
+        /* ─── Knob grid ─────────────────────────────────────────────── */
+        .knob-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+            gap: 4px;
         }
 
-        .control-group label {
+        .knob-card {
+            position: relative;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            font-size: 11.5px;
+            gap: 8px;
+            padding: 12px 6px 14px 6px;
+            border-radius: 16px;
+            transition: background 0.15s ease;
+        }
+
+        .knob-card:hover {
+            background: var(--well);
+        }
+
+        .knob-card-btns {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            display: flex;
+            gap: 3px;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .knob-card:hover .knob-card-btns {
+            opacity: 1;
+        }
+
+        .knob-label {
+            font-size: 10.5px;
             font-weight: 500;
-            color: var(--ink);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.01em;
+            color: var(--ink-soft);
+            text-align: center;
+            line-height: 1.25;
         }
 
-        .param-btns {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .slider-container input[type="range"] {
-            flex: 1;
-            height: 4px;
-            background: var(--line);
+        .knob {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            position: relative;
+            cursor: grab;
+            touch-action: none;
             outline: none;
-            -webkit-appearance: none;
         }
 
-        .slider-container input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            background: var(--accent);
-            border: 2px solid var(--line);
-            border-radius: 0;
-            cursor: pointer;
-            transition: transform 0.12s ease;
+        .knob:active,
+        .knob.dragging {
+            cursor: grabbing;
         }
 
-        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
+        .knob-dial {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 33% 28%, var(--knob-face-1), var(--knob-face-2) 72%);
+            box-shadow:
+                0 1px 1px rgba(255, 255, 255, 0.5),
+                0 8px 16px -6px rgba(28, 27, 23, 0.4),
+                inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+            position: relative;
+            transition: box-shadow 0.15s ease;
         }
 
-        .slider-container input[type="range"]::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            background: var(--accent);
-            border: 2px solid var(--line);
-            border-radius: 0;
-            cursor: pointer;
+        .knob:focus-visible .knob-dial,
+        .knob.dragging .knob-dial {
+            box-shadow:
+                0 0 0 3px rgba(169, 116, 63, 0.35),
+                0 8px 16px -6px rgba(28, 27, 23, 0.4),
+                inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+        }
+
+        .knob-pointer {
+            position: absolute;
+            top: 8%;
+            left: 50%;
+            width: 3px;
+            height: 32%;
+            background: var(--knob-tick);
+            border-radius: 2px;
+            transform-origin: 50% 190%;
+            transform: translateX(-50%) rotate(-135deg);
+            pointer-events: none;
+        }
+
+        .knob-ring {
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--line);
+            opacity: 0;
+            pointer-events: none;
         }
 
         .value-display {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 600;
+            font-size: 10.5px;
+            font-weight: 500;
             color: var(--ink);
-            background: var(--bg);
-            border: 1px solid var(--line);
-            min-width: 44px;
-            padding: 2px 4px;
-            text-align: right;
+            background: var(--well);
+            border: 1px solid var(--line-soft);
+            border-radius: 8px;
+            min-width: 38px;
+            padding: 2px 5px;
+            text-align: center;
         }
 
         /* ─── Animation (cycle) controls ────────────────────────────── */
         .anim-toggle {
             flex-shrink: 0;
-            width: 22px;
-            height: 22px;
-            border-radius: 0;
-            border: 2px solid var(--line);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid var(--line);
             background: var(--panel);
-            color: var(--ink);
-            font-size: 11px;
+            color: var(--ink-soft);
+            font-size: 10px;
             line-height: 1;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.12s ease;
+            transition: all 0.15s ease;
             padding: 0;
         }
 
         .anim-toggle:hover {
             background: var(--ink);
             color: var(--panel);
+            border-color: var(--ink);
         }
 
         .anim-toggle.active {
-            background: var(--accent-2);
-            border-color: var(--line);
-            color: var(--panel);
-            animation: anim-pulse 1.4s ease-in-out infinite;
-        }
-
-        .anim-toggle.dice-mini:hover {
             background: var(--accent);
+            border-color: var(--accent);
+            color: var(--panel);
+            animation: anim-pulse 1.6s ease-in-out infinite;
         }
 
         @keyframes anim-pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.55; }
         }
 
         .anim-range {
             display: none;
             flex-direction: column;
-            margin-top: 10px;
+            width: 100%;
+            margin-top: 2px;
         }
 
         .anim-range.visible {
             display: flex;
+        }
+
+        /* Non-knob control groups (used only inside Canvas / Colors, and for
+           anything that isn't a rotary parameter) */
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-group label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+
+        .param-btns {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         /* Dual-handle range slider: two overlapping <input type=range> with a
@@ -431,17 +511,18 @@
             top: 50%;
             left: 0;
             right: 0;
-            height: 4px;
-            background: var(--grid-line);
-            border: 1px solid var(--line);
+            height: 3px;
+            background: var(--line);
+            border-radius: 3px;
             transform: translateY(-50%);
         }
 
         .dual-slider-range {
             position: absolute;
             top: 50%;
-            height: 4px;
-            background: var(--accent-2);
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px;
             transform: translateY(-50%);
         }
 
@@ -467,10 +548,10 @@
             -webkit-appearance: none;
             width: 12px;
             height: 12px;
-            border-radius: 0;
-            background: var(--accent-2);
-            border: 2px solid var(--panel);
-            outline: 1px solid var(--line);
+            border-radius: 50%;
+            background: var(--panel);
+            border: 2px solid var(--accent);
+            box-shadow: 0 1px 3px rgba(28, 27, 23, 0.3);
             cursor: pointer;
             margin-top: 0;
         }
@@ -484,24 +565,35 @@
             pointer-events: auto;
             width: 10px;
             height: 10px;
-            border-radius: 0;
-            background: var(--accent-2);
-            border: 2px solid var(--panel);
-            outline: 1px solid var(--line);
+            border-radius: 50%;
+            background: var(--panel);
+            border: 2px solid var(--accent);
             cursor: pointer;
         }
 
         .dual-slider-labels {
             display: flex;
             justify-content: space-between;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            color: var(--ink-soft);
+            font-size: 9.5px;
+            color: var(--ink-faint);
             margin-top: 4px;
         }
 
-        .dice-button {
-            font-size: 15px;
+        /* Plain slider (still used for the two remaining non-knob ranges,
+           if any, and as a base style for inputs before JS wires knobs) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 3px;
+            background: var(--line);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        /* The native range input behind each knob stays in the DOM (so all
+           existing param logic keeps reading/writing it) but is not shown -
+           the .knob div is the only visible, interactive control. */
+        .knob-native {
+            display: none;
         }
 
         /* ─── Compact Palette Grid ──────────────────────────────────── */
@@ -516,8 +608,8 @@
             position: relative;
             width: 100%;
             aspect-ratio: 1;
-            border-radius: 0;
-            border: 2px solid var(--line);
+            border-radius: 9px;
+            border: 1px solid var(--line);
             overflow: hidden;
             cursor: pointer;
         }
@@ -537,18 +629,18 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
         }
 
         .bg-swatch-row .swatch {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             flex-shrink: 0;
+            border-radius: 50%;
         }
 
         .bg-swatch-row label {
-            font-size: 11.5px;
-            text-transform: uppercase;
+            font-size: 12px;
             color: var(--ink);
         }
 
@@ -556,39 +648,34 @@
         .button {
             background: var(--panel);
             color: var(--ink);
-            border: 2px solid var(--line);
-            padding: 10px 14px;
-            border-radius: 0;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
+            border: 1px solid var(--line);
+            padding: 11px 16px;
+            border-radius: 999px;
+            font-family: 'Inter', sans-serif;
+            font-size: 12.5px;
+            font-weight: 500;
             cursor: pointer;
-            box-shadow: 3px 3px 0 var(--ink);
-            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
             width: 100%;
         }
 
         .button:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0 var(--ink);
+            border-color: var(--ink);
         }
 
         .button:active {
-            transform: translate(0, 0);
-            box-shadow: 1px 1px 0 var(--ink);
+            transform: scale(0.97);
         }
 
         .button.primary {
-            background: var(--accent);
-            border-color: var(--line);
-            color: var(--ink);
-            font-weight: 700;
+            background: var(--ink);
+            border-color: var(--ink);
+            color: var(--panel);
+            font-weight: 600;
         }
 
         .button.primary:hover {
-            background: #ff5c3d;
+            background: #000;
         }
 
         .button-row {
@@ -612,7 +699,8 @@
                 right: 16px;
                 bottom: 16px;
                 width: auto;
-                height: 46vh;
+                height: 48vh;
+                border-radius: 22px;
             }
 
             .panel-tab {
@@ -624,6 +712,7 @@
     </style>
 </head>
 <body>
+    <div class="grain"></div>
     <div class="stage">
         <div class="canvas-area">
             <div id="canvas-container">
@@ -636,41 +725,46 @@
 
     <div class="sidebar" id="sidebarPanel">
         <div class="panel-head">
-            <div class="wordmark">Concentric<span>Bloom</span></div>
+            <div class="wordmark">Concentric Bloom</div>
             <button class="panel-close" onclick="togglePanel()" aria-label="Hide controls">×</button>
         </div>
             <!-- Seed Section (ALWAYS KEEP THIS) -->
             <div class="control-section">
                 <h3>Seed</h3>
-                <input type="number" id="seed-input" class="seed-input" value="12345" onchange="updateSeed()">
-                <div class="seed-controls">
-                    <button class="button" onclick="previousSeed()">← Prev</button>
-                    <button class="button" onclick="nextSeed()">Next →</button>
+                <div class="seed-display">
+                    <button class="icon-btn" onclick="previousSeed()" aria-label="Previous seed">‹</button>
+                    <input type="number" id="seed-input" class="seed-input" value="12345" onchange="updateSeed()">
+                    <button class="icon-btn" onclick="nextSeed()" aria-label="Next seed">›</button>
                 </div>
                 <button class="button regen-button" onclick="randomSeedAndUpdate()">↻ Random</button>
             </div>
 
 
+
             <!-- Animation Section (cycles parameter values) -->
             <div class="control-section">
                 <h3>Animation</h3>
-                <div class="control-group" style="margin-bottom: 10px;">
-                    <label>Cycle Speed</label>
-                    <div class="slider-container">
-                        <input type="range" id="animSpeed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateAnimSpeed(this.value)">
+                <div class="knob-grid" style="margin-bottom: 14px;">
+                    <div class="knob-card">
+                        <div class="knob" data-target="animSpeed" tabindex="0">
+                            <div class="knob-dial"><div class="knob-pointer"></div></div>
+                        </div>
+                        <span class="knob-label">Cycle speed</span>
                         <span class="value-display" id="animSpeed-value">0.4</span>
+                        <input type="range" class="knob-native" id="animSpeed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateAnimSpeed(this.value)">
                     </div>
-                </div>
-                <div class="control-group" style="margin-bottom: 10px;">
-                    <label>Transition Blend</label>
-                    <div class="slider-container">
-                        <input type="range" id="blendAmount" min="0" max="100" step="5" value="60" oninput="updateBlendAmount(this.value)">
+                    <div class="knob-card">
+                        <div class="knob" data-target="blendAmount" tabindex="0">
+                            <div class="knob-dial"><div class="knob-pointer"></div></div>
+                        </div>
+                        <span class="knob-label">Transition blend</span>
                         <span class="value-display" id="blendAmount-value">60%</span>
+                        <input type="range" class="knob-native" id="blendAmount" min="0" max="100" step="5" value="60" oninput="updateBlendAmount(this.value)">
                     </div>
                 </div>
-                <p style="font-size:11.5px;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">Tap 🎲 next to any parameter below to randomize its cycle range and set it in motion.</p>
+                <p style="font-size:11.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:12px;">Tap 🎲 next to any parameter below to randomize its cycle range and set it in motion.</p>
                 <div class="button-row">
-                    <button class="button" onclick="stopAllAnimations()">■ Stop All Cycles</button>
+                    <button class="button" onclick="stopAllAnimations()">■ Stop all cycles</button>
                 </div>
             </div>
 
@@ -678,12 +772,15 @@
             <div class="control-section">
                 <h3>Composition</h3>
 
-                <div class="control-group">
-                    <label>Form Density <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('formCount')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-formCount" onclick="toggleAnim('formCount')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="formCount" min="60" max="260" step="5" value="150" oninput="updateParam('formCount', this.value)">
-                        <span class="value-display" id="formCount-value">150</span>
+                <div class="knob-grid">
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('formCount')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-formCount" onclick="toggleAnim('formCount')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="formCount" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Form Density</span>
+                    <span class="value-display" id="formCount-value">150</span>
+                    <input type="range" class="knob-native" id="formCount" min="60" max="260" step="5" value="150" oninput="updateParam('formCount', this.value)">
                     <div class="anim-range" id="anim-range-formCount">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -695,12 +792,14 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label>Max Scale <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('maxRadius')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-maxRadius" onclick="toggleAnim('maxRadius')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="maxRadius" min="180" max="480" step="10" value="360" oninput="updateParam('maxRadius', this.value)">
-                        <span class="value-display" id="maxRadius-value">360</span>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('maxRadius')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-maxRadius" onclick="toggleAnim('maxRadius')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="maxRadius" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Max Scale</span>
+                    <span class="value-display" id="maxRadius-value">360</span>
+                    <input type="range" class="knob-native" id="maxRadius" min="180" max="480" step="10" value="360" oninput="updateParam('maxRadius', this.value)">
                     <div class="anim-range" id="anim-range-maxRadius">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -712,12 +811,14 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label>Overlap Fluidity <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('overlap')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-overlap" onclick="toggleAnim('overlap')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="overlap" min="0" max="0.6" step="0.02" value="0.28" oninput="updateParam('overlap', this.value)">
-                        <span class="value-display" id="overlap-value">0.28</span>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('overlap')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-overlap" onclick="toggleAnim('overlap')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="overlap" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Overlap Fluidity</span>
+                    <span class="value-display" id="overlap-value">0.28</span>
+                    <input type="range" class="knob-native" id="overlap" min="0" max="0.6" step="0.02" value="0.28" oninput="updateParam('overlap', this.value)">
                     <div class="anim-range" id="anim-range-overlap">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -729,12 +830,14 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label>Ring Density <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('ringDensity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-ringDensity" onclick="toggleAnim('ringDensity')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="ringDensity" min="0.5" max="2.2" step="0.05" value="1.2" oninput="updateParam('ringDensity', this.value)">
-                        <span class="value-display" id="ringDensity-value">1.2</span>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('ringDensity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-ringDensity" onclick="toggleAnim('ringDensity')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="ringDensity" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Ring Density</span>
+                    <span class="value-display" id="ringDensity-value">1.2</span>
+                    <input type="range" class="knob-native" id="ringDensity" min="0.5" max="2.2" step="0.05" value="1.2" oninput="updateParam('ringDensity', this.value)">
                     <div class="anim-range" id="anim-range-ringDensity">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -746,12 +849,14 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label>Nesting Probability <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('nestProb')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-nestProb" onclick="toggleAnim('nestProb')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="nestProb" min="0" max="0.8" step="0.02" value="0.4" oninput="updateParam('nestProb', this.value)">
-                        <span class="value-display" id="nestProb-value">0.4</span>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('nestProb')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-nestProb" onclick="toggleAnim('nestProb')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="nestProb" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Nesting Probability</span>
+                    <span class="value-display" id="nestProb-value">0.4</span>
+                    <input type="range" class="knob-native" id="nestProb" min="0" max="0.8" step="0.02" value="0.4" oninput="updateParam('nestProb', this.value)">
                     <div class="anim-range" id="anim-range-nestProb">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -762,18 +867,22 @@
                         <div class="dual-slider-labels"><span id="nestProb-from-label">0.1</span><span id="nestProb-to-label">0.6</span></div>
                     </div>
                 </div>
+                </div>
             </div>
 
             <!-- Rings & Fill -->
             <div class="control-section">
                 <h3>Rings &amp; Fill</h3>
 
-                <div class="control-group">
-                    <label>Filled Ring Amount <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('filledAmount')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-filledAmount" onclick="toggleAnim('filledAmount')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="filledAmount" min="0" max="0.9" step="0.05" value="0.45" oninput="updateParam('filledAmount', this.value)">
-                        <span class="value-display" id="filledAmount-value">0.45</span>
+                <div class="knob-grid">
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('filledAmount')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-filledAmount" onclick="toggleAnim('filledAmount')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="filledAmount" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Filled Ring Amount</span>
+                    <span class="value-display" id="filledAmount-value">0.45</span>
+                    <input type="range" class="knob-native" id="filledAmount" min="0" max="0.9" step="0.05" value="0.45" oninput="updateParam('filledAmount', this.value)">
                     <div class="anim-range" id="anim-range-filledAmount">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -785,12 +894,14 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label>Gradient Complexity <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('gradientComplexity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-gradientComplexity" onclick="toggleAnim('gradientComplexity')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="gradientComplexity" min="2" max="5" step="1" value="3" oninput="updateParam('gradientComplexity', this.value)">
-                        <span class="value-display" id="gradientComplexity-value">3</span>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('gradientComplexity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-gradientComplexity" onclick="toggleAnim('gradientComplexity')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="gradientComplexity" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Gradient Complexity</span>
+                    <span class="value-display" id="gradientComplexity-value">3</span>
+                    <input type="range" class="knob-native" id="gradientComplexity" min="2" max="5" step="1" value="3" oninput="updateParam('gradientComplexity', this.value)">
                     <div class="anim-range" id="anim-range-gradientComplexity">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -802,12 +913,14 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label>Ring Spacing <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('ringSpacing')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-ringSpacing" onclick="toggleAnim('ringSpacing')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="ringSpacing" min="0.4" max="2.5" step="0.05" value="1" oninput="updateParam('ringSpacing', this.value)">
-                        <span class="value-display" id="ringSpacing-value">1</span>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('ringSpacing')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-ringSpacing" onclick="toggleAnim('ringSpacing')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="ringSpacing" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Ring Spacing</span>
+                    <span class="value-display" id="ringSpacing-value">1</span>
+                    <input type="range" class="knob-native" id="ringSpacing" min="0.4" max="2.5" step="0.05" value="1" oninput="updateParam('ringSpacing', this.value)">
                     <div class="anim-range" id="anim-range-ringSpacing">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -819,12 +932,14 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label>Spacing Growth <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('spacingGrowth')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-spacingGrowth" onclick="toggleAnim('spacingGrowth')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="spacingGrowth" min="0.3" max="0.95" step="0.02" value="0.62" oninput="updateParam('spacingGrowth', this.value)">
-                        <span class="value-display" id="spacingGrowth-value">0.62</span>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('spacingGrowth')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-spacingGrowth" onclick="toggleAnim('spacingGrowth')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="spacingGrowth" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Spacing Growth</span>
+                    <span class="value-display" id="spacingGrowth-value">0.62</span>
+                    <input type="range" class="knob-native" id="spacingGrowth" min="0.3" max="0.95" step="0.02" value="0.62" oninput="updateParam('spacingGrowth', this.value)">
                     <div class="anim-range" id="anim-range-spacingGrowth">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -835,18 +950,22 @@
                         <div class="dual-slider-labels"><span id="spacingGrowth-from-label">0.4</span><span id="spacingGrowth-to-label">0.85</span></div>
                     </div>
                 </div>
+                </div>
             </div>
 
             <!-- Focus & Blur -->
             <div class="control-section">
                 <h3>Glow</h3>
 
-                <div class="control-group">
-                    <label>Glow Rings <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowChance')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowChance" onclick="toggleAnim('glowChance')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="glowChance" min="0" max="1" step="0.02" value="0.15" oninput="updateParam('glowChance', this.value)">
-                        <span class="value-display" id="glowChance-value">0.15</span>
+                <div class="knob-grid">
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowChance')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowChance" onclick="toggleAnim('glowChance')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="glowChance" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Glow Rings</span>
+                    <span class="value-display" id="glowChance-value">0.15</span>
+                    <input type="range" class="knob-native" id="glowChance" min="0" max="1" step="0.02" value="0.15" oninput="updateParam('glowChance', this.value)">
                     <div class="anim-range" id="anim-range-glowChance">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -858,12 +977,14 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label>Glow Intensity <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowIntensity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowIntensity" onclick="toggleAnim('glowIntensity')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="glowIntensity" min="0" max="30" step="1" value="6" oninput="updateParam('glowIntensity', this.value)">
-                        <span class="value-display" id="glowIntensity-value">6</span>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowIntensity')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowIntensity" onclick="toggleAnim('glowIntensity')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="glowIntensity" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Glow Intensity</span>
+                    <span class="value-display" id="glowIntensity-value">6</span>
+                    <input type="range" class="knob-native" id="glowIntensity" min="0" max="30" step="1" value="6" oninput="updateParam('glowIntensity', this.value)">
                     <div class="anim-range" id="anim-range-glowIntensity">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -875,12 +996,14 @@
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label>Glow Layers <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowSteps')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowSteps" onclick="toggleAnim('glowSteps')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="glowSteps" min="1" max="8" step="1" value="3" oninput="updateParam('glowSteps', this.value)">
-                        <span class="value-display" id="glowSteps-value">3</span>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowSteps')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-glowSteps" onclick="toggleAnim('glowSteps')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="glowSteps" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Glow Layers</span>
+                    <span class="value-display" id="glowSteps-value">3</span>
+                    <input type="range" class="knob-native" id="glowSteps" min="1" max="8" step="1" value="3" oninput="updateParam('glowSteps', this.value)">
                     <div class="anim-range" id="anim-range-glowSteps">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -890,6 +1013,7 @@
                         </div>
                         <div class="dual-slider-labels"><span id="glowSteps-from-label">2</span><span id="glowSteps-to-label">6</span></div>
                     </div>
+                </div>
                 </div>
             </div>
 
@@ -922,12 +1046,15 @@
                     <label>Background</label>
                 </div>
 
-                <div class="control-group">
-                    <label>Cycle Colors <span class="param-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('colorCycleHue')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-colorCycleHue" onclick="toggleAnim('colorCycleHue')" title="Toggle cycling">⟲</button></span></label>
-                    <div class="slider-container">
-                        <input type="range" id="colorCycleHue" min="0" max="360" step="1" value="0" oninput="updateParam('colorCycleHue', this.value)">
-                        <span class="value-display" id="colorCycleHue-value">0</span>
+                <div class="knob-grid" style="grid-template-columns: 88px; margin-bottom: 16px;">
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('colorCycleHue')" title="Randomize range &amp; cycle">🎲</button><button class="anim-toggle" id="anim-btn-colorCycleHue" onclick="toggleAnim('colorCycleHue')" title="Toggle cycling">⟲</button></div>
+                    <div class="knob" data-target="colorCycleHue" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
+                    <span class="knob-label">Cycle Colors</span>
+                    <span class="value-display" id="colorCycleHue-value">0</span>
+                    <input type="range" class="knob-native" id="colorCycleHue" min="0" max="360" step="1" value="0" oninput="updateParam('colorCycleHue', this.value)">
                     <div class="anim-range" id="anim-range-colorCycleHue">
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
@@ -937,6 +1064,7 @@
                         </div>
                         <div class="dual-slider-labels"><span id="colorCycleHue-from-label">0</span><span id="colorCycleHue-to-label">360</span></div>
                     </div>
+                </div>
                 </div>
 
                 <div class="palette-grid" id="paletteGrid"></div>
@@ -1178,6 +1306,7 @@
                 slider.value = rounded;
                 document.getElementById(paramName + '-value').textContent = rounded;
                 params[paramName] = rounded;
+                renderKnob(paramName);
 
                 if (!lightweightAnimParams.includes(paramName)) sawHeavy = true;
                 else sawLightweight = true;
@@ -1766,6 +1895,129 @@
         // UI CONTROL HANDLERS - CUSTOMIZE FOR YOUR PARAMETERS
         // ═══════════════════════════════════════════════════════════════════════
 
+        // ═══════════════════════════════════════════════════════════════════════
+        // ROTARY KNOBS
+        // ═══════════════════════════════════════════════════════════════════════
+        // Every knob is a thin visual + gesture skin over its existing hidden
+        // <input type=range class="knob-native">. The native input stays the
+        // single source of truth (min/max/step/value) so every other function
+        // in this file - updateParam, updateDualRange, the cycling loop,
+        // resetParameters, randomizeCycleParam - keeps working untouched.
+        // Dragging a knob just sets input.value and dispatches a real 'input'
+        // event, which fires the input's existing oninput handler exactly as
+        // if the (now-hidden) native slider had been dragged.
+        let knobRegistry = {};
+
+        function knobValueToAngle(input, v) {
+            let min = parseFloat(input.min), max = parseFloat(input.max);
+            let t = (v - min) / (max - min);
+            t = Math.min(1, Math.max(0, t));
+            return -135 + t * 270; // hardware-style 270° sweep
+        }
+
+        function renderKnob(targetId) {
+            let entry = knobRegistry[targetId];
+            if (!entry) return;
+            let v = parseFloat(entry.input.value);
+            let angle = knobValueToAngle(entry.input, v);
+            entry.pointer.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+            entry.knob.setAttribute('aria-valuenow', v);
+        }
+
+        function refreshAllKnobs() {
+            for (let id in knobRegistry) renderKnob(id);
+        }
+
+        function initKnobs() {
+            document.querySelectorAll('.knob[data-target]').forEach(knob => {
+                let targetId = knob.dataset.target;
+                let input = document.getElementById(targetId);
+                let pointer = knob.querySelector('.knob-pointer');
+                if (!input || !pointer) return;
+
+                knob.setAttribute('role', 'slider');
+                knob.setAttribute('aria-valuemin', input.min);
+                knob.setAttribute('aria-valuemax', input.max);
+
+                knobRegistry[targetId] = { knob, pointer, input };
+
+                let dragging = false, startY = 0, startVal = 0;
+
+                function begin(clientY) {
+                    dragging = true;
+                    startY = clientY;
+                    startVal = parseFloat(input.value);
+                    knob.classList.add('dragging');
+                }
+
+                function move(clientY, precise) {
+                    if (!dragging) return;
+                    let min = parseFloat(input.min), max = parseFloat(input.max);
+                    let step = parseFloat(input.step) || 1;
+                    let span = max - min;
+                    let sensitivity = precise ? 640 : 160; // px of drag for full sweep
+                    let deltaVal = ((startY - clientY) / sensitivity) * span;
+                    let newVal = startVal + deltaVal;
+                    newVal = Math.round(newVal / step) * step;
+                    newVal = Math.min(max, Math.max(min, newVal));
+                    newVal = Math.round(newVal * 1e6) / 1e6; // trim fp noise
+                    if (newVal !== parseFloat(input.value)) {
+                        input.value = newVal;
+                        renderKnob(targetId);
+                        try { input.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+                    }
+                }
+
+                function end() {
+                    dragging = false;
+                    knob.classList.remove('dragging');
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    document.removeEventListener('touchmove', onTouchMove);
+                    document.removeEventListener('touchend', onTouchEnd);
+                }
+
+                function onMouseMove(e) { move(e.clientY, e.shiftKey); }
+                function onMouseUp() { end(); }
+                function onTouchMove(e) {
+                    if (e.touches && e.touches[0]) move(e.touches[0].clientY, false);
+                    e.preventDefault();
+                }
+                function onTouchEnd() { end(); }
+
+                knob.addEventListener('mousedown', e => {
+                    begin(e.clientY);
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                    e.preventDefault();
+                });
+                knob.addEventListener('touchstart', e => {
+                    if (e.touches && e.touches[0]) begin(e.touches[0].clientY);
+                    document.addEventListener('touchmove', onTouchMove, { passive: false });
+                    document.addEventListener('touchend', onTouchEnd);
+                }, { passive: true });
+
+                knob.addEventListener('keydown', e => {
+                    let step = parseFloat(input.step) || 1;
+                    let min = parseFloat(input.min), max = parseFloat(input.max);
+                    let v = parseFloat(input.value);
+                    let handled = true;
+                    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') v = Math.min(max, v + step);
+                    else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') v = Math.max(min, v - step);
+                    else handled = false;
+                    if (handled) {
+                        e.preventDefault();
+                        v = Math.round(v * 1e6) / 1e6;
+                        input.value = v;
+                        renderKnob(targetId);
+                        try { input.dispatchEvent(new Event('input', { bubbles: true })); } catch (err) {}
+                    }
+                });
+
+                renderKnob(targetId);
+            });
+        }
+
         // Floating panel show/hide - purely cosmetic, the canvas is full-bleed
         // underneath so nothing needs to resize or recompute when this toggles.
         function togglePanel() {
@@ -1779,6 +2031,7 @@
         function updateParam(paramName, value) {
             params[paramName] = parseFloat(value);
             document.getElementById(paramName + '-value').textContent = value;
+            renderKnob(paramName);
 
             let lightweight = ['colorCycleHue', 'glowIntensity', 'glowSteps'];
             if (lightweight.includes(paramName)) {
@@ -1896,12 +2149,14 @@
             updateSeedDisplay();
             initializeSystem();
             compositeStatic();
+            refreshAllKnobs();
         }
 
         // Initialize UI on load
         window.addEventListener('load', function() {
             updateSeedDisplay();
             cycleParamIds.forEach(paramName => renderDualRangeFill(paramName));
+            initKnobs();
         });
     </script>
 </body>
