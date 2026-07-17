@@ -405,6 +405,46 @@
             background: var(--well);
         }
 
+        /* When a knob's cycle is switched on, its card breaks out of the
+           narrow grid column and spans the full row - the from/to range and
+           per-knob speed control need real width to be legible, and cramming
+           them into an ~80px column is what caused the overflow/overlap. */
+        .knob-card.expanded {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 84px 1fr;
+            grid-template-rows: auto auto auto auto;
+            grid-template-areas:
+                "hbtns  hbtns"
+                "hknob  hrange"
+                "hlabel hrange"
+                "hvalue hrange";
+            column-gap: 18px;
+            row-gap: 2px;
+            align-items: center;
+            justify-items: center;
+            background: var(--well);
+            padding: 10px 14px 14px 14px;
+        }
+
+        .knob-card.expanded .knob-card-btns {
+            grid-area: hbtns;
+            width: 100%;
+            justify-content: flex-end;
+            margin-bottom: 2px;
+        }
+
+        .knob-card.expanded .knob { grid-area: hknob; }
+        .knob-card.expanded .knob-label { grid-area: hlabel; }
+        .knob-card.expanded .value-display { grid-area: hvalue; }
+
+        .knob-card.expanded .anim-range {
+            grid-area: hrange;
+            width: 100%;
+            align-self: stretch;
+            justify-self: stretch;
+        }
+
         .knob-card-btns {
             display: flex;
             align-items: center;
@@ -673,6 +713,7 @@
 
         .anim-speed-row input[type="range"] {
             flex: 1;
+            min-width: 0;
             height: 3px;
         }
 
@@ -1422,7 +1463,10 @@
                 activeAnimations[paramName] = true;
                 document.getElementById('anim-btn-' + paramName).classList.add('active');
                 document.getElementById('anim-btn-' + paramName).innerHTML = ICON_STOP;
-                document.getElementById('anim-range-' + paramName).classList.add('visible');
+                let rangeDiv = document.getElementById('anim-range-' + paramName);
+                rangeDiv.classList.add('visible');
+                let card = rangeDiv.closest('.knob-card');
+                if (card) card.classList.add('expanded');
                 ensureParamSpeedDefault(paramName);
             }
             // small random phase offset so re-rolling a running cycle doesn't
@@ -1435,12 +1479,14 @@
         function toggleAnim(paramName) {
             const btn = document.getElementById('anim-btn-' + paramName);
             const rangeDiv = document.getElementById('anim-range-' + paramName);
+            const card = rangeDiv.closest('.knob-card');
 
             if (activeAnimations[paramName]) {
                 delete activeAnimations[paramName];
                 btn.classList.remove('active');
                 btn.innerHTML = ICON_PLAY;
                 rangeDiv.classList.remove('visible');
+                if (card) card.classList.remove('expanded');
                 if (Object.keys(activeAnimations).length === 0) stopAnimLoop();
             } else {
                 activeAnimations[paramName] = true;
@@ -1448,6 +1494,7 @@
                 btn.classList.add('active');
                 btn.innerHTML = ICON_STOP;
                 rangeDiv.classList.add('visible');
+                if (card) card.classList.add('expanded');
                 ensureParamSpeedDefault(paramName);
                 startAnimLoop();
             }
@@ -1458,7 +1505,11 @@
                 const btn = document.getElementById('anim-btn-' + paramName);
                 const rangeDiv = document.getElementById('anim-range-' + paramName);
                 if (btn) { btn.classList.remove('active'); btn.innerHTML = ICON_PLAY; }
-                if (rangeDiv) rangeDiv.classList.remove('visible');
+                if (rangeDiv) {
+                    rangeDiv.classList.remove('visible');
+                    let card = rangeDiv.closest('.knob-card');
+                    if (card) card.classList.remove('expanded');
+                }
             }
             activeAnimations = {};
             stopAnimLoop();
