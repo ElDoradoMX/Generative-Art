@@ -398,6 +398,7 @@
             gap: 8px;
             padding: 12px 6px 14px 6px;
             border-radius: 16px;
+            min-width: 0;
             transition: background 0.15s ease;
         }
 
@@ -406,50 +407,28 @@
         }
 
         /* When a knob's cycle is switched on, its card breaks out of the
-           narrow grid column and spans the full row - the from/to range and
-           per-knob speed control need real width to be legible, and cramming
-           them into an ~80px column is what caused the overflow/overlap. */
+           narrow grid column and spans the full row width - it keeps the
+           exact same simple vertical stack (buttons / knob / label / value /
+           range), just with a lot more horizontal room, so nothing needs to
+           be repositioned into a side-by-side layout that can overflow. */
         .knob-card.expanded {
             grid-column: 1 / -1;
-            display: grid;
-            grid-template-columns: 84px 1fr;
-            grid-template-rows: auto auto auto auto;
-            grid-template-areas:
-                "hbtns  hbtns"
-                "hknob  hrange"
-                "hlabel hrange"
-                "hvalue hrange";
-            column-gap: 18px;
-            row-gap: 2px;
-            align-items: center;
-            justify-items: center;
             background: var(--well);
-            padding: 10px 14px 14px 14px;
+            padding: 12px 16px 16px 16px;
+            min-width: 0;
         }
-
-        .knob-card.expanded .knob-card-btns {
-            grid-area: hbtns;
-            width: 100%;
-            justify-content: flex-end;
-            margin-bottom: 2px;
-        }
-
-        .knob-card.expanded .knob { grid-area: hknob; }
-        .knob-card.expanded .knob-label { grid-area: hlabel; }
-        .knob-card.expanded .value-display { grid-area: hvalue; }
 
         .knob-card.expanded .anim-range {
-            grid-area: hrange;
             width: 100%;
-            align-self: stretch;
-            justify-self: stretch;
+            max-width: 340px;
         }
+
 
         .knob-card-btns {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 3px;
         }
 
         .knob-label {
@@ -534,8 +513,8 @@
         /* ─── Animation (cycle) controls ────────────────────────────── */
         .anim-toggle {
             flex-shrink: 0;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             border: 1px solid var(--line);
             background: var(--panel);
@@ -569,6 +548,12 @@
             animation: anim-pulse 1.6s ease-in-out infinite;
         }
 
+        .anim-toggle.disabled {
+            opacity: 0.35;
+            cursor: default;
+            pointer-events: none;
+        }
+
         @keyframes anim-pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.55; }
@@ -578,6 +563,7 @@
             display: none;
             flex-direction: column;
             width: 100%;
+            min-width: 0;
             margin-top: 2px;
         }
 
@@ -617,6 +603,7 @@
         .dual-slider {
             position: relative;
             height: 16px;
+            min-width: 0;
         }
 
         .dual-slider-track {
@@ -690,6 +677,7 @@
             font-size: 9.5px;
             color: var(--ink-faint);
             margin-top: 4px;
+            min-width: 0;
         }
 
         /* Per-knob speed control - appears below the from/to range once a
@@ -702,6 +690,7 @@
             margin-top: 8px;
             padding-top: 8px;
             border-top: 1px solid var(--line-soft);
+            min-width: 0;
         }
 
         .anim-speed-label {
@@ -965,7 +954,7 @@
 
                 <div class="knob-grid">
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('formCount')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-formCount" onclick="toggleAnim('formCount')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('formCount')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-formCount" onclick="startParamCycle('formCount')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-formCount" onclick="stopParamCycle('formCount')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="formCount" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -985,7 +974,7 @@
                 </div>
 
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('maxRadius')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-maxRadius" onclick="toggleAnim('maxRadius')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('maxRadius')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-maxRadius" onclick="startParamCycle('maxRadius')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-maxRadius" onclick="stopParamCycle('maxRadius')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="maxRadius" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1005,7 +994,7 @@
                 </div>
 
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('overlap')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-overlap" onclick="toggleAnim('overlap')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('overlap')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-overlap" onclick="startParamCycle('overlap')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-overlap" onclick="stopParamCycle('overlap')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="overlap" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1025,7 +1014,7 @@
                 </div>
 
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('ringDensity')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-ringDensity" onclick="toggleAnim('ringDensity')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('ringDensity')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-ringDensity" onclick="startParamCycle('ringDensity')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-ringDensity" onclick="stopParamCycle('ringDensity')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="ringDensity" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1045,7 +1034,7 @@
                 </div>
 
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('nestProb')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-nestProb" onclick="toggleAnim('nestProb')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('nestProb')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-nestProb" onclick="startParamCycle('nestProb')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-nestProb" onclick="stopParamCycle('nestProb')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="nestProb" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1072,7 +1061,7 @@
 
                 <div class="knob-grid">
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('filledAmount')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-filledAmount" onclick="toggleAnim('filledAmount')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('filledAmount')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-filledAmount" onclick="startParamCycle('filledAmount')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-filledAmount" onclick="stopParamCycle('filledAmount')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="filledAmount" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1092,7 +1081,7 @@
                 </div>
 
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('gradientComplexity')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-gradientComplexity" onclick="toggleAnim('gradientComplexity')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('gradientComplexity')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-gradientComplexity" onclick="startParamCycle('gradientComplexity')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-gradientComplexity" onclick="stopParamCycle('gradientComplexity')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="gradientComplexity" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1112,7 +1101,7 @@
                 </div>
 
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('ringSpacing')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-ringSpacing" onclick="toggleAnim('ringSpacing')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('ringSpacing')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-ringSpacing" onclick="startParamCycle('ringSpacing')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-ringSpacing" onclick="stopParamCycle('ringSpacing')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="ringSpacing" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1132,7 +1121,7 @@
                 </div>
 
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('spacingGrowth')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-spacingGrowth" onclick="toggleAnim('spacingGrowth')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('spacingGrowth')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-spacingGrowth" onclick="startParamCycle('spacingGrowth')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-spacingGrowth" onclick="stopParamCycle('spacingGrowth')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="spacingGrowth" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1159,7 +1148,7 @@
 
                 <div class="knob-grid">
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowChance')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-glowChance" onclick="toggleAnim('glowChance')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('glowChance')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-glowChance" onclick="startParamCycle('glowChance')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-glowChance" onclick="stopParamCycle('glowChance')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="glowChance" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1179,7 +1168,7 @@
                 </div>
 
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowIntensity')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-glowIntensity" onclick="toggleAnim('glowIntensity')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('glowIntensity')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-glowIntensity" onclick="startParamCycle('glowIntensity')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-glowIntensity" onclick="stopParamCycle('glowIntensity')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="glowIntensity" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1199,7 +1188,7 @@
                 </div>
 
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('glowSteps')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-glowSteps" onclick="toggleAnim('glowSteps')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('glowSteps')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-glowSteps" onclick="startParamCycle('glowSteps')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-glowSteps" onclick="stopParamCycle('glowSteps')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="glowSteps" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1251,7 +1240,7 @@
 
                 <div class="knob-grid" style="grid-template-columns: 88px; margin-bottom: 16px;">
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeCycleParam('colorCycleHue')" title="Randomize range &amp; cycle"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-colorCycleHue" onclick="toggleAnim('colorCycleHue')" title="Toggle cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button></div>
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('colorCycleHue')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-colorCycleHue" onclick="startParamCycle('colorCycleHue')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-colorCycleHue" onclick="stopParamCycle('colorCycleHue')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="colorCycleHue" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
@@ -1404,21 +1393,19 @@
             renderDualRangeFill(paramName);
         }
 
-        // Mini dice button: picks a fresh random from/to span for just this one
-        // parameter (at least ~20% of its slider's range apart, so the cycle is
-        // always visible) and activates cycling for it immediately.
         // Small monochrome icon set shared by every mini button in the panel -
-        // kept as plain SVG strings so both the static HTML (rendered once on
-        // load) and JS state changes (play <-> stop) can reuse the same glyphs.
+        // kept as plain SVG strings so the static HTML (rendered once on load)
+        // has one source of truth. Play always shows the triangle, Stop
+        // always shows the square - state is communicated via .active /
+        // .disabled, not by swapping glyphs anymore.
         const ICON_PLAY = '<svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg>';
         const ICON_STOP = '<svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg>';
         const ICON_SHUFFLE = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>';
 
         function initMiniButtonIcons() {
             document.querySelectorAll('.dice-mini').forEach(btn => btn.innerHTML = ICON_SHUFFLE);
-            document.querySelectorAll('.anim-toggle:not(.dice-mini)').forEach(btn => {
-                btn.innerHTML = btn.classList.contains('active') ? ICON_STOP : ICON_PLAY;
-            });
+            document.querySelectorAll('[id^="anim-btn-"]').forEach(btn => btn.innerHTML = ICON_PLAY);
+            document.querySelectorAll('[id^="anim-stop-"]').forEach(btn => btn.innerHTML = ICON_STOP);
         }
 
         // Per-parameter cycle speed - each knob defaults to the global "Cycle
@@ -1442,7 +1429,24 @@
             }
         }
 
-        function randomizeCycleParam(paramName) {
+        // Shuffle button: rerolls this one parameter to a new random value,
+        // right now. Purely a one-shot "reroll" - it never starts, stops, or
+        // otherwise touches that parameter's cycle state.
+        function randomizeParamValue(paramName) {
+            const slider = document.getElementById(paramName);
+            const min = parseFloat(slider.min), max = parseFloat(slider.max), step = parseFloat(slider.step) || 1;
+            let v = min + Math.random() * (max - min);
+            v = Math.round(v / step) * step;
+            v = Math.min(max, Math.max(min, v));
+            slider.value = v;
+            updateParam(paramName, v);
+        }
+
+        // Play button: starts this parameter's cycle (picking a fresh random
+        // from/to range each time, like the old dice behavior did), and
+        // reveals its range + per-knob speed controls. Only this button ever
+        // starts the animation loop for a parameter.
+        function startParamCycle(paramName) {
             const slider = document.getElementById(paramName);
             const min = parseFloat(slider.min), max = parseFloat(slider.max), step = parseFloat(slider.step) || 1;
             const span = max - min;
@@ -1459,52 +1463,45 @@
 
             setDualRange(paramName, lo, hi);
 
-            if (!activeAnimations[paramName]) {
-                activeAnimations[paramName] = true;
-                document.getElementById('anim-btn-' + paramName).classList.add('active');
-                document.getElementById('anim-btn-' + paramName).innerHTML = ICON_STOP;
-                let rangeDiv = document.getElementById('anim-range-' + paramName);
-                rangeDiv.classList.add('visible');
-                let card = rangeDiv.closest('.knob-card');
-                if (card) card.classList.add('expanded');
-                ensureParamSpeedDefault(paramName);
-            }
-            // small random phase offset so re-rolling a running cycle doesn't
-            // visibly snap back to the same spot in its oscillation
-            animStartTimes[paramName] = performance.now() - Math.random() * 2000;
-
-            startAnimLoop();
-        }
-
-        function toggleAnim(paramName) {
             const btn = document.getElementById('anim-btn-' + paramName);
+            const stopBtn = document.getElementById('anim-stop-' + paramName);
             const rangeDiv = document.getElementById('anim-range-' + paramName);
             const card = rangeDiv.closest('.knob-card');
 
-            if (activeAnimations[paramName]) {
-                delete activeAnimations[paramName];
-                btn.classList.remove('active');
-                btn.innerHTML = ICON_PLAY;
-                rangeDiv.classList.remove('visible');
-                if (card) card.classList.remove('expanded');
-                if (Object.keys(activeAnimations).length === 0) stopAnimLoop();
-            } else {
-                activeAnimations[paramName] = true;
-                animStartTimes[paramName] = performance.now();
-                btn.classList.add('active');
-                btn.innerHTML = ICON_STOP;
-                rangeDiv.classList.add('visible');
-                if (card) card.classList.add('expanded');
-                ensureParamSpeedDefault(paramName);
-                startAnimLoop();
-            }
+            activeAnimations[paramName] = true;
+            animStartTimes[paramName] = performance.now();
+            btn.classList.add('active');
+            if (stopBtn) stopBtn.classList.remove('disabled');
+            rangeDiv.classList.add('visible');
+            if (card) card.classList.add('expanded');
+            ensureParamSpeedDefault(paramName);
+            startAnimLoop();
+        }
+
+        // Stop button: stops this parameter's cycle and collapses its card
+        // back down. The only way a running cycle is turned off.
+        function stopParamCycle(paramName) {
+            if (!activeAnimations[paramName]) return;
+            const btn = document.getElementById('anim-btn-' + paramName);
+            const stopBtn = document.getElementById('anim-stop-' + paramName);
+            const rangeDiv = document.getElementById('anim-range-' + paramName);
+            const card = rangeDiv.closest('.knob-card');
+
+            delete activeAnimations[paramName];
+            btn.classList.remove('active');
+            if (stopBtn) stopBtn.classList.add('disabled');
+            rangeDiv.classList.remove('visible');
+            if (card) card.classList.remove('expanded');
+            if (Object.keys(activeAnimations).length === 0) stopAnimLoop();
         }
 
         function stopAllAnimations() {
             for (const paramName in activeAnimations) {
                 const btn = document.getElementById('anim-btn-' + paramName);
+                const stopBtn = document.getElementById('anim-stop-' + paramName);
                 const rangeDiv = document.getElementById('anim-range-' + paramName);
-                if (btn) { btn.classList.remove('active'); btn.innerHTML = ICON_PLAY; }
+                if (btn) btn.classList.remove('active');
+                if (stopBtn) stopBtn.classList.add('disabled');
                 if (rangeDiv) {
                     rangeDiv.classList.remove('visible');
                     let card = rangeDiv.closest('.knob-card');
@@ -2171,7 +2168,7 @@
         // <input type=range class="knob-native">. The native input stays the
         // single source of truth (min/max/step/value) so every other function
         // in this file - updateParam, updateDualRange, the cycling loop,
-        // resetParameters, randomizeCycleParam - keeps working untouched.
+        // resetParameters, randomizeParamValue - keeps working untouched.
         // Dragging a knob just sets input.value and dispatches a real 'input'
         // event, which fires the input's existing oninput handler exactly as
         // if the (now-hidden) native slider had been dragged.
