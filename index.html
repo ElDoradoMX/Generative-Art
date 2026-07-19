@@ -1,1474 +1,2635 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Cellular Automata Studio</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-  :root{
-    --bg:#0a0b0e;
-    --panel:#111318;
-    --panel-border:#1f232b;
-    --text:#e6e8ec;
-    --text-dim:#8b909c;
-    --accent:#5ee6c8;
-    --accent-dim:#2a5b52;
-    --danger:#e6685e;
-    --control-bg:#181b21;
-    --control-border:#2a2f3a;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
-  }
-  *{box-sizing:border-box;}
-  html,body{
-    margin:0; padding:0; width:100%; height:100%;
-    background:var(--bg); color:var(--text); overflow:hidden;
-  }
-  #app{
-    display:flex; width:100vw; height:100vh;
-  }
-  #stage{
-    position:relative; flex:1 1 auto; min-width:0; height:100%;
-    background:#000;
-    display:flex; align-items:center; justify-content:center;
-  }
-  #stage canvas{
-    display:block; image-rendering:pixelated; image-rendering:crisp-edges;
-    cursor:crosshair;
-  }
-  #hoverDot{
-    position:absolute; pointer-events:none; border:1px solid rgba(94,230,200,.85);
-    background:rgba(94,230,200,.12); border-radius:2px; display:none;
-  }
-  #hud{
-    position:absolute; top:14px; left:14px; font-size:11px; color:var(--text-dim);
-    letter-spacing:.02em; pointer-events:none; user-select:none;
-    background:rgba(10,11,14,.55); padding:5px 9px; border-radius:6px;
-    backdrop-filter:blur(4px);
-  }
-  #sidebar{
-    flex:0 0 300px; height:100%; overflow-y:auto; background:var(--panel);
-    border-left:1px solid var(--panel-border); padding:18px 16px 30px;
-  }
-  #sidebar::-webkit-scrollbar{width:8px;}
-  #sidebar::-webkit-scrollbar-thumb{background:#242833; border-radius:4px;}
-  h1{
-    font-size:13px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
-    margin:0 0 2px; color:var(--text);
-  }
-  .sub{ font-size:11px; color:var(--text-dim); margin:0 0 20px; }
-  .group{ margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid var(--panel-border); }
-  .group:last-child{ border-bottom:none; }
-  .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
-  .row:last-child{ margin-bottom:0; }
-  label.field-label{
-    font-size:11px; color:var(--text-dim); font-weight:500; letter-spacing:.02em;
-  }
-  .val{ font-size:11px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:34px; text-align:right; }
-  select, input[type=text], input[type=number]{
-    background:var(--control-bg); color:var(--text); border:1px solid var(--control-border);
-    border-radius:6px; padding:6px 8px; font-size:12px; width:100%; outline:none;
-  }
-  select:focus, input[type=text]:focus, input[type=number]:focus{ border-color:var(--accent-dim); }
-  input[type=checkbox]{ accent-color:var(--accent); width:16px; height:16px; cursor:pointer; }
-  input[type=range]{
-    -webkit-appearance:none; width:100%; height:4px; border-radius:2px;
-    background:var(--control-border); outline:none;
-  }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none; width:13px; height:13px; border-radius:50%;
-    background:var(--accent); cursor:pointer; border:2px solid #0a0b0e;
-  }
-  input[type=range]::-moz-range-thumb{
-    width:11px; height:11px; border-radius:50%; background:var(--accent); border:2px solid #0a0b0e; cursor:pointer;
-  }
-  .slider-row{ display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
-  .slider-row:last-child{ margin-bottom:0; }
-  .slider-row .top{ display:flex; justify-content:space-between; }
-  .btn-row{ display:flex; gap:8px; margin-top:4px; }
-  button{
-    background:var(--control-bg); color:var(--text); border:1px solid var(--control-border);
-    border-radius:6px; padding:8px 10px; font-size:12px; cursor:pointer; flex:1;
-    transition:border-color .12s, color .12s;
-  }
-  button:hover{ border-color:var(--accent-dim); color:var(--accent); }
-  button.primary{ background:var(--accent); color:#04140f; border-color:var(--accent); font-weight:600; }
-  button.primary:hover{ opacity:.9; color:#04140f; }
-  button.danger:hover{ border-color:#5c2b27; color:var(--danger); }
-  button.icon{ flex:0 0 auto; width:34px; padding:8px 0; }
-  input[type=color].swatch{
-    -webkit-appearance:none; appearance:none;
-    width:34px; height:34px; padding:0; border:2px solid var(--control-border);
-    border-radius:7px; background:none; cursor:pointer; flex:0 0 auto;
-  }
-  input[type=color].swatch::-webkit-color-swatch-wrapper{ padding:2px; }
-  input[type=color].swatch::-webkit-color-swatch{ border:none; border-radius:4px; }
-  input[type=color].swatch::-moz-color-swatch{ border:none; border-radius:4px; }
-  input[type=color].swatch:hover{ border-color:var(--accent-dim); }
-  .toggle-group{ display:flex; border:1px solid var(--control-border); border-radius:6px; overflow:hidden; }
-  .toggle-group button{ flex:1; border:none; border-radius:0; background:var(--control-bg); }
-  .toggle-group button.active{ background:var(--accent-dim); color:var(--accent); }
-  .hint{ font-size:10.5px; color:#565b66; line-height:1.5; margin-top:8px; }
-  .kbd{ display:inline-block; background:var(--control-bg); border:1px solid var(--control-border); border-radius:3px; padding:0 5px; font-size:10px; color:var(--text-dim); }
-  .rule-preset-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; }
-  .rule-preset-grid button{ font-size:11px; padding:6px 4px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eyes Bloom — Generative Art</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════
+           CLEAN ELEGANT TECH — light, instrument-like, synthesizer-inspired
+           Warm paper-grey stage, soft off-white floating panel, near-black
+           rotary knobs with a single tick, a serif wordmark against a sea
+           of quiet sans labels. Soft blurred elevation, generous radius,
+           nothing hard-edged or graphic-poster about it.
+           ═══════════════════════════════════════════════════════════════ */
+        :root {
+            --page: #edebe4;
+            --panel: #fbfaf7;
+            --well: #f2f0e9;
+            --ink: #1c1b17;
+            --ink-soft: #8d8a7e;
+            --ink-faint: #b9b6a9;
+            --line: #ddd9cc;
+            --line-soft: #e8e5da;
+            --accent: #a9743f;
+            --knob-face-1: #333029;
+            --knob-face-2: #171612;
+            --knob-tick: #f5f2ea;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--page);
+            color: var(--ink);
+            font-feature-settings: 'tnum' 1;
+        }
+
+        /* Subtle paper grain across the whole stage - the one texture
+           borrowed from the mood references, kept very quiet */
+        .grain {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.035;
+            mix-blend-mode: multiply;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* Full-bleed canvas host - the panel floats above this, it never
+           pushes or resizes it */
+        .stage {
+            position: fixed;
+            inset: 0;
+        }
+
+        .canvas-area {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            background:
+                repeating-linear-gradient(0deg, rgba(28, 27, 23, 0.07) 0px, rgba(28, 27, 23, 0.07) 1px, transparent 1px, transparent 72px),
+                repeating-linear-gradient(90deg, rgba(28, 27, 23, 0.07) 0px, rgba(28, 27, 23, 0.07) 1px, transparent 1px, transparent 72px),
+                #f6f5f1;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        #canvas-container canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto !important;
+            height: auto !important;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: var(--ink-soft);
+        }
+
+        /* ─── Floating panel tab (collapsed state trigger) ─────────────── */
+        .panel-tab {
+            position: fixed;
+            top: 32px;
+            left: 32px;
+            z-index: 20;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--panel);
+            color: var(--ink);
+            border: 1px solid var(--line);
+            font-size: 17px;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 12px 28px -10px rgba(28, 27, 23, 0.3);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .panel-tab.showing {
+            display: flex;
+        }
+
+        .panel-tab:hover {
+            transform: scale(1.06);
+            background: var(--ink);
+            color: var(--panel);
+        }
+
+        /* ─── Floating control panel ─────────────────────────────────── */
+        .sidebar {
+            position: fixed;
+            top: 32px;
+            left: 32px;
+            bottom: 32px;
+            width: 336px;
+            z-index: 10;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 26px;
+            box-shadow: 0 40px 90px -24px rgba(28, 27, 23, 0.4);
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(calc(-100% - 56px));
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sidebar.dragging-panel {
+            transition: none;
+            cursor: grabbing;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--line);
+            border-radius: 8px;
+        }
+
+        .panel-head {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--panel);
+            padding: 22px 22px 16px 22px;
+            border-bottom: 1px solid var(--line-soft);
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .panel-head-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .drag-grip {
+            color: var(--ink-faint);
+            font-size: 15px;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .wordmark {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-style: normal;
+            font-size: 17px;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            color: var(--ink);
+        }
+
+        .panel-close {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--ink-soft);
+            border: 1px solid var(--line);
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .panel-close:hover {
+            background: var(--ink);
+            border-color: var(--ink);
+            color: var(--panel);
+        }
+
+        /* ─── Control Sections ──────────────────────────────────────── */
+        .control-section {
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--line-soft);
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+        }
+
+        .control-section h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 16px;
+        }
+
+        /* ─── Seed globe (line-art micro widget with integrated nav) ───── */
+        .seed-widget {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .seed-globe-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .seed-globe {
+            position: relative;
+            flex-shrink: 0;
+            width: 104px;
+            height: 104px;
+            border-radius: 50%;
+            background: var(--well);
+            border: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .globe-lines {
+            position: absolute;
+            inset: 12px;
+            width: calc(100% - 24px);
+            height: calc(100% - 24px);
+            fill: none;
+            stroke: var(--ink-faint);
+            stroke-width: 0.8;
+            pointer-events: none;
+        }
+
+        .seed-globe-input {
+            position: relative;
+            z-index: 1;
+            width: 72%;
+            background: transparent;
+            color: var(--ink);
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: -0.01em;
+            border: none;
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+
+        .seed-globe-input::-webkit-outer-spin-button,
+        .seed-globe-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .seed-globe-input:focus {
+            outline: none;
+        }
+
+        .globe-arrow {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            background: var(--well);
+            color: var(--ink);
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .globe-arrow:hover {
+            background: var(--ink);
+            border-color: var(--ink);
+            color: var(--panel);
+        }
+
+        .globe-shuffle {
+            margin-top: -15px;
+            z-index: 2;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--ink-soft);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 14px -4px rgba(28, 27, 23, 0.3);
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .globe-shuffle:hover {
+            background: var(--ink);
+            border-color: var(--ink);
+            color: var(--panel);
+        }
+
+        .select-input {
+            width: 100%;
+            background: var(--well);
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 12.5px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            color: var(--ink);
+            cursor: pointer;
+        }
+
+        .select-input:focus {
+            outline: none;
+            border-color: var(--ink);
+        }
+
+        /* ─── Knob grid ─────────────────────────────────────────────── */
+        .knob-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+            gap: 4px;
+        }
+
+        .knob-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 6px 14px 6px;
+            border-radius: 16px;
+            min-width: 0;
+            transition: background 0.15s ease;
+        }
+
+        .knob-card:hover {
+            background: var(--well);
+        }
+
+        /* The knob whose panel is currently open gets a quiet highlight so
+           it's clear which knob the detail panel below belongs to - the
+           card itself never resizes or moves, so opening/closing a panel
+           never reflows the grid. */
+        .knob-card.linked {
+            background: var(--well);
+        }
+
+        /* ─── Shared detail panel (one per section) ────────────────────
+           Lives as a normal block right after that section's knob-grid,
+           not as a grid item - so revealing it only ever grows/shrinks
+           the section's own height in a plain, smooth block transition,
+           regardless of how narrow the grid's columns are. */
+        .cycle-detail-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+
+
+        .knob-card-btns {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        .knob-label {
+            font-size: 10.5px;
+            font-weight: 500;
+            color: var(--ink-soft);
+            text-align: center;
+            line-height: 1.25;
+        }
+
+        .knob {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            position: relative;
+            cursor: grab;
+            touch-action: none;
+            outline: none;
+        }
+
+        .knob:active,
+        .knob.dragging {
+            cursor: grabbing;
+        }
+
+        .knob-dial {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 33% 28%, var(--knob-face-1), var(--knob-face-2) 72%);
+            box-shadow:
+                0 1px 1px rgba(255, 255, 255, 0.5),
+                0 8px 16px -6px rgba(28, 27, 23, 0.4),
+                inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+            position: relative;
+            transition: box-shadow 0.15s ease;
+        }
+
+        .knob:focus-visible .knob-dial,
+        .knob.dragging .knob-dial {
+            box-shadow:
+                0 0 0 3px rgba(169, 116, 63, 0.35),
+                0 8px 16px -6px rgba(28, 27, 23, 0.4),
+                inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+        }
+
+        .knob-pointer {
+            position: absolute;
+            top: 13.5%;
+            left: 50%;
+            width: 6px;
+            height: 6px;
+            margin-left: -3px;
+            background: var(--knob-tick);
+            border-radius: 50%;
+            transform-origin: 50% 316.7%;
+            transform: rotate(-135deg);
+            pointer-events: none;
+        }
+
+        .knob-ring {
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--line);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .value-display {
+            font-size: 10.5px;
+            font-weight: 500;
+            color: var(--ink);
+            background: var(--well);
+            border: 1px solid var(--line-soft);
+            border-radius: 8px;
+            min-width: 38px;
+            padding: 2px 5px;
+            text-align: center;
+        }
+
+        /* ─── Animation (cycle) controls ────────────────────────────── */
+        .anim-toggle {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--ink-soft);
+            font-size: 10px;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            padding: 0;
+        }
+
+        .anim-toggle svg {
+            width: 10px;
+            height: 10px;
+            display: block;
+        }
+
+        .anim-toggle:hover {
+            background: var(--ink);
+            color: var(--panel);
+            border-color: var(--ink);
+        }
+
+        .anim-toggle.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--panel);
+            animation: anim-pulse 1.6s ease-in-out infinite;
+        }
+
+        .anim-toggle.disabled {
+            opacity: 0.35;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        @keyframes anim-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.55; }
+        }
+
+        .anim-range {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-width: 0;
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+            padding: 0 14px;
+            background: transparent;
+            border-radius: 14px;
+            overflow: hidden;
+            pointer-events: none;
+            transition: max-height 0.34s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease,
+                        margin-top 0.34s ease, padding 0.34s ease, background 0.34s ease;
+        }
+
+        .anim-range.visible {
+            max-height: 260px;
+            opacity: 1;
+            margin-top: 10px;
+            padding: 12px 14px 14px 14px;
+            background: var(--well);
+            pointer-events: auto;
+        }
+
+        /* Non-knob control groups (used only inside Canvas / Colors, and for
+           anything that isn't a rotary parameter) */
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-group label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+
+        .param-btns {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Dual-handle range slider: two overlapping <input type=range> with a
+           filled bar drawn between them, so setting a cycle's min/max is a
+           drag instead of typing two numbers. */
+        .dual-slider {
+            position: relative;
+            height: 16px;
+            min-width: 0;
+        }
+
+        .dual-slider-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--line);
+            border-radius: 3px;
+            transform: translateY(-50%);
+        }
+
+        .dual-slider-range {
+            position: absolute;
+            top: 50%;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px;
+            transform: translateY(-50%);
+        }
+
+        .dual-slider input[type="range"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 16px;
+            margin: 0;
+            background: none;
+            pointer-events: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .dual-slider input[type="range"]::-webkit-slider-runnable-track {
+            background: none;
+        }
+
+        .dual-slider input[type="range"]::-webkit-slider-thumb {
+            pointer-events: auto;
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--panel);
+            border: 2px solid var(--accent);
+            box-shadow: 0 1px 3px rgba(28, 27, 23, 0.3);
+            cursor: pointer;
+            margin-top: 0;
+        }
+
+        .dual-slider input[type="range"]::-moz-range-track {
+            background: none;
+            border: none;
+        }
+
+        .dual-slider input[type="range"]::-moz-range-thumb {
+            pointer-events: auto;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--panel);
+            border: 2px solid var(--accent);
+            cursor: pointer;
+        }
+
+        .dual-slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9.5px;
+            color: var(--ink-faint);
+            margin-top: 4px;
+            min-width: 0;
+        }
+
+        /* Per-knob speed control - appears below the from/to range once a
+           knob's cycle is switched on, so each parameter can drift at its
+           own pace instead of sharing one global speed. */
+        .anim-speed-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--line-soft);
+            min-width: 0;
+        }
+
+        .anim-speed-label {
+            flex-shrink: 0;
+            font-size: 9.5px;
+            color: var(--ink-faint);
+            width: 30px;
+        }
+
+        .anim-speed-row input[type="range"] {
+            flex: 1;
+            min-width: 0;
+            height: 3px;
+        }
+
+        .anim-speed-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--panel);
+            border: 2px solid var(--ink-soft);
+            cursor: pointer;
+        }
+
+        .anim-speed-row input[type="range"]::-moz-range-thumb {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--panel);
+            border: 2px solid var(--ink-soft);
+            cursor: pointer;
+        }
+
+        .anim-speed-row .value-display {
+            flex-shrink: 0;
+            font-size: 9.5px;
+            min-width: 28px;
+        }
+
+        /* Plain slider (still used for the two remaining non-knob ranges,
+           if any, and as a base style for inputs before JS wires knobs) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 3px;
+            background: var(--line);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        /* The native range input behind each knob stays in the DOM (so all
+           existing param logic keeps reading/writing it) but is not shown -
+           the .knob div is the only visible, interactive control. */
+        .knob-native {
+            display: none;
+        }
+
+        /* ─── Compact Palette Grid ──────────────────────────────────── */
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .swatch {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 9px;
+            border: 1px solid var(--line);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .swatch input[type="color"] {
+            position: absolute;
+            inset: -20%;
+            width: 140%;
+            height: 140%;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            opacity: 0;
+        }
+
+        .bg-swatch-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .bg-swatch-row .swatch {
+            width: 30px;
+            height: 30px;
+            flex-shrink: 0;
+            border-radius: 50%;
+        }
+
+        .bg-swatch-row label {
+            font-size: 12px;
+            color: var(--ink);
+        }
+
+        /* ─── Buttons ────────────────────────────────────────────────── */
+        .button {
+            background: var(--panel);
+            color: var(--ink);
+            border: 1px solid var(--line);
+            padding: 11px 16px;
+            border-radius: 999px;
+            font-family: 'Inter', sans-serif;
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+            width: 100%;
+        }
+
+        .button:hover {
+            border-color: var(--ink);
+        }
+
+        .button:active {
+            transform: scale(0.97);
+        }
+
+        .button.primary {
+            background: var(--ink);
+            border-color: var(--ink);
+            color: var(--panel);
+            font-weight: 600;
+        }
+
+        .button.primary:hover {
+            background: #000;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .button-row .button {
+            flex: 1;
+        }
+
+        /* ─── Responsive - Stack panel as a bottom sheet on mobile ─────── */
+        @media (max-width: 720px) {
+            .canvas-area {
+                padding: 0;
+            }
+
+            .sidebar {
+                top: auto;
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+                width: auto;
+                height: 48vh;
+                border-radius: 22px;
+            }
+
+            .panel-tab {
+                top: auto;
+                bottom: 16px;
+                left: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div id="app">
-  <div id="stage">
-    <canvas id="view"></canvas>
-    <div id="hoverDot"></div>
-    <div id="hud">— <span id="genCount">0</span> generations · <span id="fps">0</span> fps</div>
-  </div>
-
-  <div id="sidebar">
-    <h1>Cellular Automata</h1>
-    <p class="sub">Generative grid studio</p>
-
-    <!-- RULE FAMILY -->
-    <div class="group">
-      <div class="row"><label class="field-label">Rule family</label></div>
-      <select id="familySelect">
-        <option value="life">Life-like (2D, B/S)</option>
-        <option value="brain">Brian's Brain (3-state)</option>
-        <option value="elementary">Elementary CA (1D, rule 0–255)</option>
-      </select>
-
-      <div id="lifeControls" style="margin-top:10px;">
-        <div class="row"><label class="field-label">Preset</label></div>
-        <select id="lifePreset">
-          <option value="B3/S23">Conway's Life — B3/S23</option>
-          <option value="B36/S23">HighLife — B36/S23</option>
-          <option value="B3678/S34678">Day & Night — B3678/S34678</option>
-          <option value="B2/S">Seeds — B2/S</option>
-          <option value="B3/S12345">Maze — B3/S12345</option>
-          <option value="B368/S245">Morley — B368/S245</option>
-          <option value="custom">Custom…</option>
-        </select>
-        <div class="row" style="margin-top:8px;">
-          <input type="text" id="customRule" placeholder="e.g. B3/S23" value="B3/S23">
+    <div class="grain"></div>
+    <div class="stage">
+        <div class="canvas-area">
+            <div id="canvas-container">
+                <div class="loading">Initializing generative art...</div>
+            </div>
         </div>
-      </div>
+    </div>
 
-      <div id="elementaryControls" style="display:none; margin-top:10px;">
-        <div class="row">
-          <label class="field-label">Rule number</label>
-          <span class="val" id="ruleNumVal">30</span>
+    <button class="panel-tab" id="panelTab" onclick="togglePanel()" aria-label="Show controls">≡</button>
+
+    <div class="sidebar" id="sidebarPanel">
+        <div class="panel-head">
+            <div class="panel-head-left">
+                <span class="drag-grip" aria-hidden="true">⠿</span>
+                <div class="wordmark">Eyes Bloom</div>
+            </div>
+            <button class="panel-close" onclick="togglePanel()" aria-label="Hide controls">×</button>
         </div>
-        <input type="range" id="ruleNumSlider" min="0" max="255" value="30">
-        <div class="rule-preset-grid">
-          <button data-rule="30">Rule 30</button>
-          <button data-rule="90">Rule 90</button>
-          <button data-rule="110">Rule 110</button>
-          <button data-rule="184">Rule 184</button>
-        </div>
-      </div>
+            <!-- Seed Section (ALWAYS KEEP THIS) -->
+            <div class="control-section">
+                <h3>Seed</h3>
+                <div class="seed-widget">
+                    <div class="seed-globe-row">
+                        <button class="globe-arrow" onclick="previousSeed()" aria-label="Previous seed">‹</button>
+                        <div class="seed-globe">
+                            <svg class="globe-lines" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            <input type="number" id="seed-input" class="seed-globe-input" value="12345" onchange="updateSeed()" aria-label="Seed number">
+                        </div>
+                        <button class="globe-arrow" onclick="nextSeed()" aria-label="Next seed">›</button>
+                    </div>
+                    <button class="globe-shuffle" onclick="randomSeedAndUpdate()" aria-label="Random seed" title="Random seed">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 3 21 3 21 8"></polyline>
+                            <line x1="4" y1="20" x2="21" y2="3"></line>
+                            <polyline points="21 16 21 21 16 21"></polyline>
+                            <line x1="15" y1="15" x2="21" y2="21"></line>
+                            <line x1="4" y1="4" x2="9" y2="9"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+
+
+            <!-- Animation Section (cycles parameter values) -->
+            <div class="control-section">
+                <h3>Animation</h3>
+                <div class="knob-grid" style="margin-bottom: 14px;">
+                    <div class="knob-card">
+                        <div class="knob" data-target="animSpeed" tabindex="0">
+                            <div class="knob-dial"><div class="knob-pointer"></div></div>
+                        </div>
+                        <span class="knob-label">Cycle speed</span>
+                        <span class="value-display" id="animSpeed-value">0.4</span>
+                        <input type="range" class="knob-native" id="animSpeed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateAnimSpeed(this.value)">
+                    </div>
+                    <div class="knob-card">
+                        <div class="knob" data-target="blendAmount" tabindex="0">
+                            <div class="knob-dial"><div class="knob-pointer"></div></div>
+                        </div>
+                        <span class="knob-label">Transition blend</span>
+                        <span class="value-display" id="blendAmount-value">60%</span>
+                        <input type="range" class="knob-native" id="blendAmount" min="0" max="100" step="5" value="60" oninput="updateBlendAmount(this.value)">
+                    </div>
+                    <div class="knob-card">
+                        <div class="knob" data-target="animSmoothness" tabindex="0">
+                            <div class="knob-dial"><div class="knob-pointer"></div></div>
+                        </div>
+                        <span class="knob-label">Smoothness</span>
+                        <span class="value-display" id="animSmoothness-value">50%</span>
+                        <input type="range" class="knob-native" id="animSmoothness" min="0" max="100" step="5" value="50" oninput="updateAnimSmoothness(this.value)">
+                    </div>
+                </div>
+                <p style="font-size:11.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:12px;">Tap the shuffle icon next to any parameter below to randomize its cycle range and set it in motion.</p>
+                <div class="button-row">
+                    <button class="button" onclick="stopAllAnimations()">■ Stop all cycles</button>
+                </div>
+            </div>
+
+            <!-- Parameters Section -->
+            <div class="control-section">
+                <h3>Composition</h3>
+
+                <div class="knob-grid">
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('formCount')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-formCount" onclick="startParamCycle('formCount')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-formCount" onclick="stopParamCycle('formCount')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="formCount" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Form Density</span>
+                    <span class="value-display" id="formCount-value">150</span>
+                    <input type="range" class="knob-native" id="formCount" min="60" max="260" step="5" value="150" oninput="updateParam('formCount', this.value)">
+                    
+                </div>
+
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('maxRadius')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-maxRadius" onclick="startParamCycle('maxRadius')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-maxRadius" onclick="stopParamCycle('maxRadius')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="maxRadius" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Max Scale</span>
+                    <span class="value-display" id="maxRadius-value">360</span>
+                    <input type="range" class="knob-native" id="maxRadius" min="180" max="480" step="10" value="360" oninput="updateParam('maxRadius', this.value)">
+                    
+                </div>
+
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('overlap')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-overlap" onclick="startParamCycle('overlap')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-overlap" onclick="stopParamCycle('overlap')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="overlap" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Overlap Fluidity</span>
+                    <span class="value-display" id="overlap-value">0.28</span>
+                    <input type="range" class="knob-native" id="overlap" min="0" max="0.6" step="0.02" value="0.28" oninput="updateParam('overlap', this.value)">
+                    
+                </div>
+
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('ringDensity')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-ringDensity" onclick="startParamCycle('ringDensity')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-ringDensity" onclick="stopParamCycle('ringDensity')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="ringDensity" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Ring Density</span>
+                    <span class="value-display" id="ringDensity-value">1.2</span>
+                    <input type="range" class="knob-native" id="ringDensity" min="0.5" max="2.2" step="0.05" value="1.2" oninput="updateParam('ringDensity', this.value)">
+                    
+                </div>
+
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('nestProb')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-nestProb" onclick="startParamCycle('nestProb')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-nestProb" onclick="stopParamCycle('nestProb')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="nestProb" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Nesting Probability</span>
+                    <span class="value-display" id="nestProb-value">0.4</span>
+                    <input type="range" class="knob-native" id="nestProb" min="0" max="0.8" step="0.02" value="0.4" oninput="updateParam('nestProb', this.value)">
+                    
+                </div>
+                </div>
+                <div class="cycle-detail" id="cycle-detail-1"><div class="anim-range" id="anim-range-formCount">
+                            <div class="cycle-detail-title">Form Density</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-formCount-range"></div>
+                            <input type="range" id="formCount-from" min="60" max="260" step="5" value="100" oninput="updateDualRange('formCount', this)">
+                            <input type="range" id="formCount-to" min="60" max="260" step="5" value="220" oninput="updateDualRange('formCount', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="formCount-from-label">100</span><span id="formCount-to-label">220</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="formCount-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('formCount', this.value)"><span class="value-display" id="formCount-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-maxRadius">
+                            <div class="cycle-detail-title">Max Scale</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-maxRadius-range"></div>
+                            <input type="range" id="maxRadius-from" min="180" max="480" step="10" value="210" oninput="updateDualRange('maxRadius', this)">
+                            <input type="range" id="maxRadius-to" min="180" max="480" step="10" value="250" oninput="updateDualRange('maxRadius', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="maxRadius-from-label">210</span><span id="maxRadius-to-label">250</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="maxRadius-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('maxRadius', this.value)"><span class="value-display" id="maxRadius-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-overlap">
+                            <div class="cycle-detail-title">Overlap Fluidity</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-overlap-range"></div>
+                            <input type="range" id="overlap-from" min="0" max="0.6" step="0.02" value="0.1" oninput="updateDualRange('overlap', this)">
+                            <input type="range" id="overlap-to" min="0" max="0.6" step="0.02" value="0.45" oninput="updateDualRange('overlap', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="overlap-from-label">0.1</span><span id="overlap-to-label">0.45</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="overlap-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('overlap', this.value)"><span class="value-display" id="overlap-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-ringDensity">
+                            <div class="cycle-detail-title">Ring Density</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-ringDensity-range"></div>
+                            <input type="range" id="ringDensity-from" min="0.5" max="2.2" step="0.05" value="0.8" oninput="updateDualRange('ringDensity', this)">
+                            <input type="range" id="ringDensity-to" min="0.5" max="2.2" step="0.05" value="1.8" oninput="updateDualRange('ringDensity', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="ringDensity-from-label">0.8</span><span id="ringDensity-to-label">1.8</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="ringDensity-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('ringDensity', this.value)"><span class="value-display" id="ringDensity-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-nestProb">
+                            <div class="cycle-detail-title">Nesting Probability</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-nestProb-range"></div>
+                            <input type="range" id="nestProb-from" min="0" max="0.8" step="0.02" value="0.1" oninput="updateDualRange('nestProb', this)">
+                            <input type="range" id="nestProb-to" min="0" max="0.8" step="0.02" value="0.6" oninput="updateDualRange('nestProb', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="nestProb-from-label">0.1</span><span id="nestProb-to-label">0.6</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="nestProb-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('nestProb', this.value)"><span class="value-display" id="nestProb-speed-value">0.4</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rings & Fill -->
+            <div class="control-section">
+                <h3>Rings &amp; Fill</h3>
+
+                <div class="knob-grid">
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('filledAmount')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-filledAmount" onclick="startParamCycle('filledAmount')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-filledAmount" onclick="stopParamCycle('filledAmount')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="filledAmount" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Filled Ring Amount</span>
+                    <span class="value-display" id="filledAmount-value">0.45</span>
+                    <input type="range" class="knob-native" id="filledAmount" min="0" max="0.9" step="0.05" value="0.45" oninput="updateParam('filledAmount', this.value)">
+                    
+                </div>
+
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('gradientComplexity')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-gradientComplexity" onclick="startParamCycle('gradientComplexity')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-gradientComplexity" onclick="stopParamCycle('gradientComplexity')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="gradientComplexity" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Gradient Complexity</span>
+                    <span class="value-display" id="gradientComplexity-value">3</span>
+                    <input type="range" class="knob-native" id="gradientComplexity" min="2" max="5" step="1" value="3" oninput="updateParam('gradientComplexity', this.value)">
+                    
+                </div>
+
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('ringSpacing')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-ringSpacing" onclick="startParamCycle('ringSpacing')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-ringSpacing" onclick="stopParamCycle('ringSpacing')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="ringSpacing" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Ring Spacing</span>
+                    <span class="value-display" id="ringSpacing-value">1</span>
+                    <input type="range" class="knob-native" id="ringSpacing" min="0.4" max="2.5" step="0.05" value="1" oninput="updateParam('ringSpacing', this.value)">
+                    
+                </div>
+
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('spacingGrowth')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-spacingGrowth" onclick="startParamCycle('spacingGrowth')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-spacingGrowth" onclick="stopParamCycle('spacingGrowth')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="spacingGrowth" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Spacing Growth</span>
+                    <span class="value-display" id="spacingGrowth-value">0.62</span>
+                    <input type="range" class="knob-native" id="spacingGrowth" min="0.3" max="0.95" step="0.02" value="0.62" oninput="updateParam('spacingGrowth', this.value)">
+                    
+                </div>
+                </div>
+                <div class="cycle-detail" id="cycle-detail-2"><div class="anim-range" id="anim-range-filledAmount">
+                            <div class="cycle-detail-title">Filled Ring Amount</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-filledAmount-range"></div>
+                            <input type="range" id="filledAmount-from" min="0" max="0.9" step="0.05" value="0.15" oninput="updateDualRange('filledAmount', this)">
+                            <input type="range" id="filledAmount-to" min="0" max="0.9" step="0.05" value="0.7" oninput="updateDualRange('filledAmount', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="filledAmount-from-label">0.15</span><span id="filledAmount-to-label">0.7</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="filledAmount-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('filledAmount', this.value)"><span class="value-display" id="filledAmount-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-gradientComplexity">
+                            <div class="cycle-detail-title">Gradient Complexity</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-gradientComplexity-range"></div>
+                            <input type="range" id="gradientComplexity-from" min="2" max="5" step="1" value="2" oninput="updateDualRange('gradientComplexity', this)">
+                            <input type="range" id="gradientComplexity-to" min="2" max="5" step="1" value="5" oninput="updateDualRange('gradientComplexity', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="gradientComplexity-from-label">2</span><span id="gradientComplexity-to-label">5</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="gradientComplexity-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('gradientComplexity', this.value)"><span class="value-display" id="gradientComplexity-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-ringSpacing">
+                            <div class="cycle-detail-title">Ring Spacing</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-ringSpacing-range"></div>
+                            <input type="range" id="ringSpacing-from" min="0.4" max="2.5" step="0.05" value="0.6" oninput="updateDualRange('ringSpacing', this)">
+                            <input type="range" id="ringSpacing-to" min="0.4" max="2.5" step="0.05" value="1.8" oninput="updateDualRange('ringSpacing', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="ringSpacing-from-label">0.6</span><span id="ringSpacing-to-label">1.8</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="ringSpacing-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('ringSpacing', this.value)"><span class="value-display" id="ringSpacing-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-spacingGrowth">
+                            <div class="cycle-detail-title">Spacing Growth</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-spacingGrowth-range"></div>
+                            <input type="range" id="spacingGrowth-from" min="0.3" max="0.95" step="0.02" value="0.4" oninput="updateDualRange('spacingGrowth', this)">
+                            <input type="range" id="spacingGrowth-to" min="0.3" max="0.95" step="0.02" value="0.85" oninput="updateDualRange('spacingGrowth', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="spacingGrowth-from-label">0.4</span><span id="spacingGrowth-to-label">0.85</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="spacingGrowth-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('spacingGrowth', this.value)"><span class="value-display" id="spacingGrowth-speed-value">0.4</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Focus & Blur -->
+            <div class="control-section">
+                <h3>Glow</h3>
+
+                <div class="knob-grid">
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('glowChance')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-glowChance" onclick="startParamCycle('glowChance')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-glowChance" onclick="stopParamCycle('glowChance')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="glowChance" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Glow Rings</span>
+                    <span class="value-display" id="glowChance-value">0.15</span>
+                    <input type="range" class="knob-native" id="glowChance" min="0" max="1" step="0.02" value="0.15" oninput="updateParam('glowChance', this.value)">
+                    
+                </div>
+
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('glowIntensity')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-glowIntensity" onclick="startParamCycle('glowIntensity')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-glowIntensity" onclick="stopParamCycle('glowIntensity')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="glowIntensity" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Glow Intensity</span>
+                    <span class="value-display" id="glowIntensity-value">6</span>
+                    <input type="range" class="knob-native" id="glowIntensity" min="0" max="30" step="1" value="6" oninput="updateParam('glowIntensity', this.value)">
+                    
+                </div>
+
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('glowSteps')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-glowSteps" onclick="startParamCycle('glowSteps')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-glowSteps" onclick="stopParamCycle('glowSteps')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="glowSteps" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Glow Layers</span>
+                    <span class="value-display" id="glowSteps-value">3</span>
+                    <input type="range" class="knob-native" id="glowSteps" min="1" max="8" step="1" value="3" oninput="updateParam('glowSteps', this.value)">
+                    
+                </div>
+                </div>
+                <div class="cycle-detail" id="cycle-detail-3"><div class="anim-range" id="anim-range-glowChance">
+                            <div class="cycle-detail-title">Glow Rings</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-glowChance-range"></div>
+                            <input type="range" id="glowChance-from" min="0" max="1" step="0.02" value="0.05" oninput="updateDualRange('glowChance', this)">
+                            <input type="range" id="glowChance-to" min="0" max="1" step="0.02" value="0.6" oninput="updateDualRange('glowChance', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="glowChance-from-label">0.05</span><span id="glowChance-to-label">0.6</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="glowChance-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('glowChance', this.value)"><span class="value-display" id="glowChance-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-glowIntensity">
+                            <div class="cycle-detail-title">Glow Intensity</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-glowIntensity-range"></div>
+                            <input type="range" id="glowIntensity-from" min="0" max="30" step="1" value="2" oninput="updateDualRange('glowIntensity', this)">
+                            <input type="range" id="glowIntensity-to" min="0" max="30" step="1" value="16" oninput="updateDualRange('glowIntensity', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="glowIntensity-from-label">2</span><span id="glowIntensity-to-label">16</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="glowIntensity-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('glowIntensity', this.value)"><span class="value-display" id="glowIntensity-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-glowSteps">
+                            <div class="cycle-detail-title">Glow Layers</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-glowSteps-range"></div>
+                            <input type="range" id="glowSteps-from" min="1" max="8" step="1" value="2" oninput="updateDualRange('glowSteps', this)">
+                            <input type="range" id="glowSteps-to" min="1" max="8" step="1" value="6" oninput="updateDualRange('glowSteps', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="glowSteps-from-label">2</span><span id="glowSteps-to-label">6</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="glowSteps-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('glowSteps', this.value)"><span class="value-display" id="glowSteps-speed-value">0.4</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvas Section -->
+            <div class="control-section">
+                <h3>Canvas</h3>
+
+                <div class="control-group">
+                    <label>Aspect Preset</label>
+                    <select id="canvasPreset" class="select-input" onchange="applyCanvasPreset(this.value)">
+                        <option value="fit" selected>Fit Screen</option>
+                        <option value="1:1">Square · 1:1</option>
+                        <option value="4:5">Portrait · 4:5</option>
+                        <option value="5:4">Landscape · 5:4</option>
+                        <option value="9:16">Story · 9:16</option>
+                        <option value="16:9">Widescreen · 16:9</option>
+                        <option value="3:2">Classic · 3:2</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Colors Section -->
+            <div class="control-section">
+                <h3>Colors</h3>
+
+                <div class="bg-swatch-row">
+                    <div class="swatch" style="background:#ffffff;">
+                        <input type="color" id="bgColor" value="#ffffff" onchange="updateBgColor(this.value)">
+                    </div>
+                    <label>Background</label>
+                </div>
+
+                <div class="knob-grid" style="grid-template-columns: 88px; margin-bottom: 16px;">
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('colorCycleHue')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-colorCycleHue" onclick="startParamCycle('colorCycleHue')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-colorCycleHue" onclick="stopParamCycle('colorCycleHue')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="colorCycleHue" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Cycle Colors</span>
+                    <span class="value-display" id="colorCycleHue-value">0</span>
+                    <input type="range" class="knob-native" id="colorCycleHue" min="0" max="360" step="1" value="0" oninput="updateParam('colorCycleHue', this.value)">
+                    
+                </div>
+                </div>
+                <div class="cycle-detail" id="cycle-detail-4"><div class="anim-range" id="anim-range-colorCycleHue">
+                            <div class="cycle-detail-title">Cycle Colors</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-colorCycleHue-range"></div>
+                            <input type="range" id="colorCycleHue-from" min="0" max="360" step="1" value="0" oninput="updateDualRange('colorCycleHue', this)">
+                            <input type="range" id="colorCycleHue-to" min="0" max="360" step="1" value="360" oninput="updateDualRange('colorCycleHue', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="colorCycleHue-from-label">0</span><span id="colorCycleHue-to-label">360</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="colorCycleHue-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('colorCycleHue', this.value)"><span class="value-display" id="colorCycleHue-speed-value">0.4</span></div>
+                    </div>
+                </div>
+
+                <div class="palette-grid" id="paletteGrid"></div>
+            </div>
+
+            <!-- Actions Section (ALWAYS KEEP THIS) -->
+            <div class="control-section">
+                <h3>Actions</h3>
+                <div class="button-row" style="margin-bottom: 8px;">
+                    <button class="button primary" onclick="regenerate()">↻ Regenerate</button>
+                </div>
+                <div class="button-row">
+                    <button class="button" onclick="resetParameters()">Reset</button>
+                    <button class="button" onclick="downloadArt()">⬇ PNG</button>
+                    <button class="button" onclick="downloadSVG()">⬇ SVG</button>
+                </div>
+            </div>
     </div>
 
-    <!-- GRID -->
-    <div class="group">
-      <div class="slider-row">
-        <div class="top"><label class="field-label">Cell size</label><span class="val" id="cellSizeVal">6px</span></div>
-        <input type="range" id="cellSizeSlider" min="4" max="20" value="6">
-      </div>
-      <div class="row">
-        <label class="field-label">Edges</label>
-        <div class="toggle-group" id="edgeToggle">
-          <button data-edge="wrap" class="active">Wrap</button>
-          <button data-edge="dead">Dead</button>
-        </div>
-      </div>
-    </div>
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // GENERATIVE ART PARAMETERS
+        // ═══════════════════════════════════════════════════════════════════════
 
-    <!-- SIMULATION -->
-    <div class="group">
-      <div class="slider-row">
-        <div class="top"><label class="field-label">Speed</label><span class="val" id="speedVal">12/s</span></div>
-        <input type="range" id="speedSlider" min="1" max="60" value="12">
-      </div>
-      <div class="btn-row">
-        <button id="playBtn" class="primary">Pause</button>
-        <button id="stepBtn">Step</button>
-        <button id="resetBtn">Reset</button>
-      </div>
-    </div>
+        let params = {
+            seed: 12345,
+            formCount: 150,
+            maxRadius: 360,
+            overlap: 0.28,
+            ringDensity: 1.2,
+            nestProb: 0.4,
+            filledAmount: 0.45,
+            colorCycleHue: 0,
+            gradientComplexity: 3,
+            ringSpacing: 1,
+            spacingGrowth: 0.62,
+            glowChance: 0.15,
+            glowIntensity: 6,
+            glowSteps: 3,
+            backgroundColor: '#ffffff',
+            canvasPreset: 'fit',
+            canvasWidth: 1200,
+            canvasHeight: 1200,
+            colorPalette: [
+                '#ff1e8c', '#c6f42d', '#0088c4', '#ff9fc9', '#5b2a8c', '#a4907c',
+                '#00e5c7', '#ff5b1f', '#b026ff', '#eaff00'
+            ]
+        };
 
-    <!-- COLOR -->
-    <div class="group">
-      <div class="row"><label class="field-label">Palette (Gradient Map)</label></div>
-      <select id="colorScheme"></select>
-      <p class="hint">Each live cell's age (0 up to ~55 frames, then it caps) sets its position along this palette's gradient — swap the palette and every cell remaps at once.</p>
+        let defaultParams = {...params, colorPalette: [...params.colorPalette]}; // Store defaults for reset
+        let renderPalette = [];
 
-      <div id="customPaletteRow" style="display:none; margin-top:10px; flex-direction:column; gap:8px;">
-        <div id="customSwatches" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
-        <div class="btn-row">
-          <button id="addStopBtn" class="icon" title="Add color stop">+</button>
-          <button id="removeStopBtn" class="icon" title="Remove last stop">−</button>
-        </div>
-        <p class="hint" style="margin:0;">Click a swatch to change its color. Left → right is dark → light along the gradient.</p>
-      </div>
+        // ═══════════════════════════════════════════════════════════════════════
+        // ANIMATION (PARAMETER CYCLING) SYSTEM
+        // ═══════════════════════════════════════════════════════════════════════
+        // Any slider in Composition / Rings & Fill / Glow can be toggled into a
+        // "cycle" mode: it oscillates smoothly (sine ping-pong) between a "from"
+        // and "to" value forever, until toggled off. A single shared timer drives
+        // every active cycle so we only ever trigger one recompute per tick, even
+        // if several parameters are cycling at once.
 
-      <div class="slider-row" style="margin-top:12px;">
-        <div class="top"><label class="field-label">Trail length</label><span class="val" id="trailVal">20</span></div>
-        <input type="range" id="trailSlider" min="0" max="120" value="20">
-      </div>
-      <p class="hint">Afterglow left behind by cells that just died, fading to background over N frames. 0 = off. (Life-like &amp; Brian's Brain only.)</p>
-    </div>
+        const lightweightAnimParams = ['glowIntensity', 'glowSteps', 'colorCycleHue']; // safe to re-render without full repack
 
-    <!-- SEEDING -->
-    <div class="group">
-      <div class="slider-row">
-        <div class="top"><label class="field-label">Randomize density</label><span class="val" id="densityVal">30%</span></div>
-        <input type="range" id="densitySlider" min="1" max="90" value="30">
-      </div>
-      <div class="btn-row">
-        <button id="randomizeBtn">Randomize</button>
-        <button id="clearBtn" class="danger">Clear</button>
-      </div>
-    </div>
+        let activeAnimations = {};   // paramName -> true
+        let animStartTimes = {};     // paramName -> performance.now() at toggle-on
+        let animLoopHandle = null;
+        let animSpeed = 0.4;
+        let blendAmount = 60; // 0-100%, how much a heavy rebuild crossfades into the next frame
+        let animSmoothness = 50; // 0-100%, how often heavy params rebuild - higher = smoother motion, more CPU
 
-    <!-- IMAGE INPUT (static image -> initial cell states) -->
-    <div class="group">
-      <div class="row"><label class="field-label">Image input</label></div>
-      <p class="hint" style="margin-top:0;">Seeds the grid from a picture — pixels brighter than the threshold become live cells.</p>
-      <div class="btn-row" style="margin-top:8px;">
-        <button id="chooseImageBtn">Choose image…</button>
-        <button id="resampleImageBtn" disabled>Resample</button>
-      </div>
-      <div class="btn-row" id="removeImageRow" style="display:none; margin-top:8px;">
-        <button id="clearImageBtn" class="danger">Remove image</button>
-      </div>
-      <input type="file" id="imageFileInput" accept="image/*" style="display:none;">
-      <p class="hint" id="imageStatus" style="margin-top:6px;">No image loaded.</p>
-
-      <div class="row" style="margin-top:10px;">
-        <label class="field-label">Fit</label>
-        <select id="imageFit" style="width:auto; flex:0 0 auto;">
-          <option value="cover" selected>Cover (crop to fill)</option>
-          <option value="contain">Contain (letterbox)</option>
-          <option value="stretch">Stretch</option>
-        </select>
-      </div>
-
-      <div class="slider-row" style="margin-top:10px;">
-        <div class="top"><label class="field-label">Brightness threshold</label><span class="val" id="imgThresholdVal">50%</span></div>
-        <input type="range" id="imgThresholdSlider" min="0" max="100" value="50">
-      </div>
-
-      <div class="row" style="margin-top:8px;">
-        <label class="field-label">Invert (dark = alive)</label>
-        <input type="checkbox" id="imgInvert">
-      </div>
-
-      <div class="row" style="margin-top:10px;">
-        <label class="field-label">Pause sim when (re)seeded</label>
-        <input type="checkbox" id="imgPauseOnSeed" checked>
-      </div>
-      <p class="hint" style="margin-top:2px;">Keeps the image on screen instead of it evolving away the instant it's applied.</p>
-
-      <div class="slider-row" style="margin-top:12px;">
-        <div class="top"><label class="field-label">Continuous feed</label><span class="val" id="imageFeedVal">Off</span></div>
-        <input type="range" id="imageFeedSlider" min="0" max="60" value="0">
-      </div>
-      <p class="hint">Re-injects the image's live cells every N generations while running, instead of a single one-time seed — a steady "light source" the automaton keeps reacting to. 0 = off.</p>
-    </div>
-
-    <!-- DRAWING -->
-    <div class="group">
-      <div class="slider-row">
-        <div class="top"><label class="field-label">Brush size</label><span class="val" id="brushVal">1</span></div>
-        <input type="range" id="brushSlider" min="1" max="10" value="1">
-      </div>
-      <p class="hint">Click / drag on canvas to draw or erase, live or paused.</p>
-    </div>
-
-    <!-- RULE PRESETS (named, saved locally, work across any rule family) -->
-    <div class="group">
-      <div class="row"><label class="field-label">Rule presets</label></div>
-      <select id="myPresets"><option value="">— none saved —</option></select>
-      <div class="btn-row" style="margin-top:8px;">
-        <button id="loadPresetBtn">Load</button>
-        <button id="deletePresetBtn" class="danger">Delete</button>
-      </div>
-      <div class="row" style="margin-top:10px;">
-        <input type="text" id="presetName" placeholder="Preset name">
-      </div>
-      <div class="btn-row">
-        <button id="savePresetBtn" class="primary">Save current rule as preset</button>
-      </div>
-      <p class="hint">Stores family + rule params only (not the grid), so a preset works at any resolution.</p>
-    </div>
-
-    <!-- FULL STATE SAVE / LOAD / SHARE -->
-    <div class="group">
-      <div class="row"><label class="field-label">Save / load state</label></div>
-      <p class="hint" style="margin-top:0;">Serializes the full grid, rule, and view as JSON — reload it later or hand the file to someone else.</p>
-      <div class="btn-row" style="margin-top:8px;">
-        <button id="saveStateBtn">Save .json</button>
-        <button id="loadStateBtn">Load .json</button>
-      </div>
-      <input type="file" id="loadStateInput" accept="application/json,.json" style="display:none;">
-      <div class="btn-row" style="margin-top:8px;">
-        <button id="shareLinkBtn">Copy share link</button>
-      </div>
-      <p class="hint" id="shareStatus"></p>
-    </div>
-
-    <div class="group" style="border-bottom:none;">
-      <p class="hint">
-        <span class="kbd">space</span> play/pause &nbsp;
-        <span class="kbd">C</span> clear &nbsp;
-        <span class="kbd">R</span> randomize
-      </p>
-    </div>
-  </div>
-</div>
-
-<script>
-/* =========================================================================
- * CELLULAR AUTOMATA STUDIO
- * -------------------------------------------------------------------------
- * Architecture, at a glance:
- *
- *   GridState        — pure data: typed-array cell buffer + per-cell "age".
- *                       Knows nothing about rules or rendering.
- *
- *   RuleEngine        — a registry of swappable rule modules. Each module
- *                       exposes step(gridState, opts) -> nothing (mutates
- *                       gridState.next / commits in place). Adding a new
- *                       rule = adding one entry to RULES. The main loop
- *                       never hardcodes rule logic.
- *
- *   InputSource       — anything that can inject cell values into the grid
- *                       (mouse drawing today; a camera/video/image feed
- *                       later). All input sources funnel through the same
- *                       GridState.setCell()/paint() API, so a future video
- *                       source is a drop-in, not a rewrite.
- *
- *   Renderer          — turns an arbitrary state buffer + age buffer into
- *                       pixels. Takes buffers as parameters rather than
- *                       reaching into a global simulation object, so it can
- *                       just as easily render a buffer fed by video input.
- *
- *   Sim (main loop)   — orchestrates timing (steps/sec), calls the active
- *                       rule's step function, then calls the renderer.
- * ==========================================================================
- */
-
-// ---------------------------------------------------------------------------
-// GridState — the decoupled data model
-// ---------------------------------------------------------------------------
-class GridState {
-  constructor(cols, rows) {
-    this.cols = cols;
-    this.rows = rows;
-    this.cells = new Uint8Array(cols * rows);   // cell value (0..N per rule family)
-    this.ages  = new Uint16Array(cols * rows);  // frames-since-changed, used for color grading
-    this.trails = new Uint8Array(cols * rows);  // fade-out intensity for recently-dead cells
-    this.generation = 0;
-  }
-  idx(x, y) { return y * this.cols + x; }
-  get(x, y) {
-    if (x < 0 || x >= this.cols || y < 0 || y >= this.rows) return 0;
-    return this.cells[this.idx(x, y)];
-  }
-  set(x, y, v) {
-    if (x < 0 || x >= this.cols || y < 0 || y >= this.rows) return;
-    const i = this.idx(x, y);
-    if (this.cells[i] !== v) this.ages[i] = 0;
-    this.cells[i] = v;
-  }
-  clear() {
-    this.cells.fill(0);
-    this.ages.fill(0);
-    this.trails.fill(0);
-    this.generation = 0;
-  }
-  resize(cols, rows) {
-    // Fresh buffers; simplest correct behavior on a resolution change.
-    this.cols = cols; this.rows = rows;
-    this.cells = new Uint8Array(cols * rows);
-    this.ages  = new Uint16Array(cols * rows);
-    this.trails = new Uint8Array(cols * rows);
-    this.generation = 0;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// RuleEngine — registry of swappable rule modules
-// ---------------------------------------------------------------------------
-// Every rule module is a serializable descriptor { family, params, step }.
-// `step(state, wrap)` returns a NEW Uint8Array of cell values (the engine
-// swaps it in and updates ages). This keeps rule code pure and testable.
-//
-// To add a new rule family: write a step() function with this signature,
-// register it below, and add any UI you want for its params. The main loop
-// (Sim.tick) does not need to change.
-// ---------------------------------------------------------------------------
-const RuleEngine = {
-
-  // --- parse "B3/S23" style notation into birth/survive Set<number> -------
-  parseBS(str) {
-    const m = /^B([0-8]*)\/S([0-8]*)$/i.exec(str.trim());
-    if (!m) return null;
-    return {
-      birth:   new Set(m[1].split('').map(Number)),
-      survive: new Set(m[2].split('').map(Number)),
-    };
-  },
-
-  // --- inverse of parseBS, for serialization/sharing -----------------------
-  bsToString(bs) {
-    const b = [...bs.birth].sort().join('');
-    const s = [...bs.survive].sort().join('');
-    return `B${b}/S${s}`;
-  },
-
-  countNeighbors(state, x, y, wrap) {
-    const { cols, rows, cells } = state;
-    let n = 0;
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        if (dx === 0 && dy === 0) continue;
-        let nx = x + dx, ny = y + dy;
-        if (wrap) { nx = (nx + cols) % cols; ny = (ny + rows) % rows; }
-        else if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue;
-        if (cells[ny * cols + nx]) n++;
-      }
-    }
-    return n;
-  },
-
-  // ---- Rule family: generalized life-like (Conway, HighLife, Seeds, ...) --
-  life: {
-    family: 'ca2d',
-    step(state, opts) {
-      const { cols, rows, cells } = state;
-      const bs = opts.bs; // {birth:Set, survive:Set}
-      const next = new Uint8Array(cells.length);
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          const n = RuleEngine.countNeighbors(state, x, y, opts.wrap);
-          const i = y * cols + x;
-          const alive = cells[i] !== 0;
-          next[i] = alive ? (bs.survive.has(n) ? 1 : 0) : (bs.birth.has(n) ? 1 : 0);
+        function updateAnimSpeed(value) {
+            animSpeed = parseFloat(value);
+            document.getElementById('animSpeed-value').textContent = value;
         }
-      }
-      return next;
-    }
-  },
 
-  // ---- Rule family: Brian's Brain (3-state: off / on / dying) -------------
-  brain: {
-    family: 'ca2d',
-    step(state, opts) {
-      const { cols, rows, cells } = state;
-      const next = new Uint8Array(cells.length);
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          const i = y * cols + x;
-          const v = cells[i];
-          if (v === 1) { next[i] = 2; continue; }        // firing -> dying
-          if (v === 2) { next[i] = 0; continue; }         // dying  -> off
-          // off -> on only with exactly 2 firing neighbors
-          let n = 0;
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              if (dx === 0 && dy === 0) continue;
-              let nx = x + dx, ny = y + dy;
-              if (opts.wrap) { nx = (nx + cols) % cols; ny = (ny + rows) % rows; }
-              else if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue;
-              if (cells[ny * cols + nx] === 1) n++;
+        function updateBlendAmount(value) {
+            blendAmount = parseFloat(value);
+            document.getElementById('blendAmount-value').textContent = value + '%';
+        }
+
+        function updateAnimSmoothness(value) {
+            animSmoothness = parseFloat(value);
+            document.getElementById('animSmoothness-value').textContent = value + '%';
+        }
+
+        // All parameters that can be cycled, with their default from/to range
+        // (used by both the initial page load and "Reset").
+        const cycleParamIds = ['formCount', 'maxRadius', 'overlap', 'ringDensity', 'nestProb',
+            'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity', 'glowSteps', 'colorCycleHue'];
+
+        const defaultAnimRanges = {
+            formCount: [100, 220], maxRadius: [210, 250], overlap: [0.1, 0.45],
+            ringDensity: [0.8, 1.8], nestProb: [0.1, 0.6], filledAmount: [0.15, 0.7],
+            gradientComplexity: [2, 5], ringSpacing: [0.6, 1.8], spacingGrowth: [0.4, 0.85],
+            glowChance: [0.05, 0.6], glowIntensity: [2, 16], glowSteps: [2, 6], colorCycleHue: [0, 360]
+        };
+
+        // Keeps the two handles from crossing, updates the little numeric
+        // labels, and redraws the filled bar between them.
+        function updateDualRange(paramName, source) {
+            const fromEl = document.getElementById(paramName + '-from');
+            const toEl = document.getElementById(paramName + '-to');
+            let f = parseFloat(fromEl.value);
+            let t = parseFloat(toEl.value);
+
+            if (source === fromEl && f > t) { fromEl.value = t; f = t; }
+            if (source === toEl && t < f) { toEl.value = f; t = f; }
+
+            document.getElementById(paramName + '-from-label').textContent = f;
+            document.getElementById(paramName + '-to-label').textContent = t;
+            renderDualRangeFill(paramName);
+        }
+
+        function renderDualRangeFill(paramName) {
+            const fromEl = document.getElementById(paramName + '-from');
+            const toEl = document.getElementById(paramName + '-to');
+            const rangeDiv = document.getElementById('dual-' + paramName + '-range');
+            const min = parseFloat(fromEl.min), max = parseFloat(fromEl.max);
+            const f = parseFloat(fromEl.value), t = parseFloat(toEl.value);
+            const pctF = ((f - min) / (max - min)) * 100;
+            const pctT = ((t - min) / (max - min)) * 100;
+            rangeDiv.style.left = pctF + '%';
+            rangeDiv.style.width = Math.max(0, pctT - pctF) + '%';
+        }
+
+        // Rounding to the nearest step with plain Math.round(v/step)*step still
+        // leaves binary floating-point residue for decimal steps (0.02, 0.05,
+        // etc - e.g. 15 * 0.02 === 0.30000000000000004 in JS), which shows up
+        // as long decimal trails wherever that value gets displayed. This
+        // rounds to the step AND trims the result to the number of decimal
+        // places the step itself has, so values always display cleanly.
+        function stepDecimals(step) {
+            if (!isFinite(step) || step <= 0) return 0;
+            const s = step.toString();
+            const i = s.indexOf('.');
+            return i === -1 ? 0 : (s.length - i - 1);
+        }
+
+        function roundToStep(value, step) {
+            if (!step) return value;
+            const snapped = Math.round(value / step) * step;
+            return parseFloat(snapped.toFixed(stepDecimals(step)));
+        }
+
+        function setDualRange(paramName, lo, hi) {
+            const fromEl = document.getElementById(paramName + '-from');
+            const toEl = document.getElementById(paramName + '-to');
+            fromEl.value = lo;
+            toEl.value = hi;
+            document.getElementById(paramName + '-from-label').textContent = lo;
+            document.getElementById(paramName + '-to-label').textContent = hi;
+            renderDualRangeFill(paramName);
+        }
+
+        // Small monochrome icon set shared by every mini button in the panel -
+        // kept as plain SVG strings so the static HTML (rendered once on load)
+        // has one source of truth. Play always shows the triangle, Stop
+        // always shows the square - state is communicated via .active /
+        // .disabled, not by swapping glyphs anymore.
+        const ICON_PLAY = '<svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg>';
+        const ICON_STOP = '<svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg>';
+        const ICON_SHUFFLE = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>';
+
+        function initMiniButtonIcons() {
+            document.querySelectorAll('.dice-mini').forEach(btn => btn.innerHTML = ICON_SHUFFLE);
+            document.querySelectorAll('[id^="anim-btn-"]').forEach(btn => btn.innerHTML = ICON_PLAY);
+            document.querySelectorAll('[id^="anim-stop-"]').forEach(btn => btn.innerHTML = ICON_STOP);
+        }
+
+        // Per-parameter cycle speed - each knob defaults to the global "Cycle
+        // Speed" knob's value the first time its own cycle switches on, but
+        // can be nudged independently afterward via the small speed row that
+        // appears beneath its from/to range.
+        let paramAnimSpeeds = {};
+
+        function updateParamSpeed(paramName, value) {
+            paramAnimSpeeds[paramName] = parseFloat(value);
+            document.getElementById(paramName + '-speed-value').textContent = value;
+        }
+
+        function ensureParamSpeedDefault(paramName) {
+            if (paramAnimSpeeds[paramName] === undefined) {
+                paramAnimSpeeds[paramName] = animSpeed;
+                let input = document.getElementById(paramName + '-speed');
+                let display = document.getElementById(paramName + '-speed-value');
+                if (input) input.value = animSpeed;
+                if (display) display.textContent = animSpeed;
             }
-          }
-          next[i] = (n === 2) ? 1 : 0;
         }
-      }
-      return next;
-    }
-  },
 
-  // ---- Rule family: elementary 1D CA (Wolfram rule 0-255), scrolling ------
-  // The grid is reused as a scrolling image: each step shifts every row up
-  // by one and computes a brand-new bottom row from the previous bottom row.
-  elementary: {
-    family: 'ca1d',
-    stepRow(row, ruleNumber, wrap) {
-      const cols = row.length;
-      const next = new Uint8Array(cols);
-      for (let x = 0; x < cols; x++) {
-        const l = wrap ? row[(x - 1 + cols) % cols] : (x > 0 ? row[x - 1] : 0);
-        const c = row[x];
-        const r = wrap ? row[(x + 1) % cols] : (x < cols - 1 ? row[x + 1] : 0);
-        const pattern = (l << 2) | (c << 1) | r; // 0..7
-        next[x] = (ruleNumber >> pattern) & 1;
-      }
-      return next;
-    },
-    step(state, opts) {
-      const { cols, rows, cells, ages } = state;
-      // shift everything up by one row
-      cells.copyWithin(0, cols);
-      ages.copyWithin(0, cols);
-      // age the remaining (older) rows, capped
-      const maxAge = 255;
-      for (let i = 0; i < cols * (rows - 1); i++) {
-        if (ages[i] < maxAge) ages[i]++;
-      }
-      // compute the new bottom row from the previous bottom row (now the
-      // second-to-last row after the shift... we track it via opts.lastRow)
-      const newRow = RuleEngine.elementary.stepRow(opts.lastRow, opts.ruleNumber, opts.wrap);
-      const base = cols * (rows - 1);
-      for (let x = 0; x < cols; x++) {
-        cells[base + x] = newRow[x];
-        ages[base + x] = 0;
-      }
-      opts.lastRow = newRow;
-      return cells; // mutated in place; caller keeps the same reference
-    }
-  },
-};
-
-// Named presets for the life-like family (serializable strings, shareable).
-const LIFE_PRESETS = {
-  "B3/S23": "Conway's Life",
-  "B36/S23": "HighLife",
-  "B3678/S34678": "Day & Night",
-  "B2/S": "Seeds",
-  "B3/S12345": "Maze",
-  "B368/S245": "Morley",
-};
-
-// ---------------------------------------------------------------------------
-// Palettes — Gradient Maps. Each cell's "shade of gray" (its age, normalized
-// to 0..1) is looked up through a palette's color stops, exactly like a
-// Photoshop-style Gradient Map: the grayscale ramp is fixed, only the
-// palette changes what color each gray level becomes.
-//
-// To add a new palette: add one entry here (a name + an array of [r,g,b]
-// stops, evenly spaced along 0..1). No other code needs to change — the
-// renderer, UI dropdown, and save/share serialization all pick it up
-// automatically via PALETTE_ORDER below.
-// ---------------------------------------------------------------------------
-const Palettes = {
-  mono:      { label: 'Grayscale',    stops: [[0,0,0], [255,255,255]] },
-  thermal:   { label: 'Thermal',      stops: [[15,20,120], [130,20,140], [230,90,40], [255,220,120]] },
-  neon:      { label: 'Neon Pulse',   stops: [[8,8,18], [0,180,255], [150,60,255], [255,60,200]] },
-  sunset:    { label: 'Sunset',       stops: [[20,10,40], [120,20,90], [230,80,60], [255,205,90]] },
-  ice:       { label: 'Ice',          stops: [[5,10,25], [20,75,120], [100,205,230], [240,250,255]] },
-  forest:    { label: 'Forest',       stops: [[5,15,10], [20,80,40], [110,170,60], [230,240,160]] },
-  infrared:  { label: 'Infrared',     stops: [[0,0,0], [90,0,110], [210,20,40], [255,180,40], [255,255,230]] },
-  vaporwave: { label: 'Vaporwave',    stops: [[15,10,45], [130,30,180], [255,80,200], [140,230,255]] },
-  custom:    { label: 'Custom…',      stops: [[0,0,0], [255,255,255]] }, // stops replaced live from user input
-};
-const PALETTE_ORDER = ['mono','thermal','neon','sunset','ice','forest','infrared','vaporwave','custom'];
-
-// Evenly-spaced multi-stop linear interpolation: t in [0,1] -> [r,g,b].
-function sampleGradient(stops, t) {
-  t = Math.max(0, Math.min(1, t));
-  const n = stops.length - 1;
-  const seg = t * n;
-  const i0 = Math.floor(seg);
-  const i1 = Math.min(i0 + 1, n);
-  const f = seg - i0;
-  const a = stops[i0], b = stops[i1];
-  return [
-    a[0] + (b[0] - a[0]) * f,
-    a[1] + (b[1] - a[1]) * f,
-    a[2] + (b[2] - a[2]) * f,
-  ];
-}
-
-function hexToRgb(hex) {
-  hex = hex.trim().replace(/^#/, '');
-  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-  const num = parseInt(hex, 16);
-  if (Number.isNaN(num) || hex.length !== 6) return null;
-  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
-}
-
-function rgbToHex([r, g, b]) {
-  const c = n => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, '0');
-  return '#' + c(r) + c(g) + c(b);
-}
-
-// Parses a comma-separated hex list ("#0a0a1e, #ff2fb0, #fef6c9") into stops.
-function parseCustomStops(str) {
-  const parts = (str || '').split(',').map(s => s.trim()).filter(Boolean);
-  if (parts.length < 2) return null;
-  const stops = parts.map(hexToRgb);
-  return stops.every(Boolean) ? stops : null;
-}
-
-// ---------------------------------------------------------------------------
-// Renderer — draws an arbitrary (cells, ages, trails) buffer set to the
-// canvas. Decoupled from simulation: could just as well render a buffer that
-// was populated by a video/camera input source rather than the Sim below.
-// ---------------------------------------------------------------------------
-const Renderer = {
-  offCanvas: document.createElement('canvas'),
-  offCtx: null,
-  imgData: null,
-  ageDivisor: 55, // frames of age it takes a live cell to reach the "hot" end of the gradient
-
-  init(cols, rows) {
-    this.offCanvas.width = cols;
-    this.offCanvas.height = rows;
-    this.offCtx = this.offCanvas.getContext('2d');
-    this.imgData = this.offCtx.createImageData(cols, rows);
-  },
-
-  draw(state, paletteKey, trailMax) {
-    const { cols, rows, cells, ages, trails } = state;
-    if (this.offCanvas.width !== cols || this.offCanvas.height !== rows) this.init(cols, rows);
-    const palette = Palettes[paletteKey] || Palettes.mono;
-    const stops = palette.stops;
-    const data = this.imgData.data;
-    const useTrails = trailMax > 0;
-
-    // Background = gray level 0 through the gradient map; afterglow target
-    // = a mid/high gray level, so dying cells fade from their live color
-    // down toward black rather than toward an unrelated fixed hue.
-    const bg = sampleGradient(stops, 0);
-    const trailColor = sampleGradient(stops, 0.55);
-
-    for (let i = 0; i < cells.length; i++) {
-      let r, g, b;
-      if (cells[i] === 1) {
-        const t = Math.min(ages[i] / this.ageDivisor, 1);
-        [r, g, b] = sampleGradient(stops, t);
-      } else if (cells[i] === 2) {
-        // Brian's Brain "dying" state — a fixed high-gray tone
-        [r, g, b] = sampleGradient(stops, 0.88);
-      } else if (useTrails && trails[i] > 0) {
-        // afterglow: blend from background toward the trail color, fading
-        // out as trails[i] counts down to 0.
-        const t = trails[i] / trailMax;
-        r = bg[0] + (trailColor[0] - bg[0]) * t;
-        g = bg[1] + (trailColor[1] - bg[1]) * t;
-        b = bg[2] + (trailColor[2] - bg[2]) * t;
-      } else {
-        [r, g, b] = bg;
-      }
-      const p = i * 4;
-      data[p] = r; data[p + 1] = g; data[p + 2] = b; data[p + 3] = 255;
-    }
-    this.offCtx.putImageData(this.imgData, 0, 0);
-  },
-
-  present(mainCtx, mainCanvas) {
-    mainCtx.imageSmoothingEnabled = false;
-    mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-    mainCtx.drawImage(this.offCanvas, 0, 0, mainCanvas.width, mainCanvas.height);
-  }
-};
-
-// ---------------------------------------------------------------------------
-// InputSource — anything that injects values into the grid.
-// Today: mouse drawing, randomize/clear buttons, and static image sampling.
-// FUTURE: a camera/video source can implement the same sampleBinary()-style
-// contract per frame (mapping pixel brightness to cell state continuously)
-// and be swapped in without touching Sim or Renderer.
-// ---------------------------------------------------------------------------
-const MouseInput = {
-  drawing: false,
-  eraseMode: false,
-  brush: 1,
-  attach(canvas, getState, getCellSize, onPaint) {
-    const toGrid = (evt) => {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      const px = (evt.clientX - rect.left) * scaleX;
-      const py = (evt.clientY - rect.top) * scaleY;
-      const cs = getCellSize();
-      return { x: Math.floor(px / cs), y: Math.floor(py / cs) };
-    };
-    const paintAt = (gx, gy, value) => {
-      const state = getState();
-      const r = this.brush - 1;
-      for (let dy = -r; dy <= r; dy++) {
-        for (let dx = -r; dx <= r; dx++) {
-          if (dx * dx + dy * dy <= r * r + 0.5) state.set(gx + dx, gy + dy, value);
+        // Shuffle button: rerolls this one parameter to a new random value,
+        // right now. Purely a one-shot "reroll" - it never starts, stops, or
+        // otherwise touches that parameter's cycle state.
+        function randomizeParamValue(paramName) {
+            const slider = document.getElementById(paramName);
+            const min = parseFloat(slider.min), max = parseFloat(slider.max), step = parseFloat(slider.step) || 1;
+            let v = min + Math.random() * (max - min);
+            v = roundToStep(v, step);
+            v = Math.min(max, Math.max(min, v));
+            slider.value = v;
+            updateParam(paramName, v);
         }
-      }
-      onPaint();
-    };
-    canvas.addEventListener('mousedown', (e) => {
-      this.drawing = true;
-      const { x, y } = toGrid(e);
-      this.eraseMode = getState().get(x, y) !== 0;
-      paintAt(x, y, this.eraseMode ? 0 : 1);
-    });
-    window.addEventListener('mouseup', () => { this.drawing = false; });
-    canvas.addEventListener('mousemove', (e) => {
-      const { x, y } = toGrid(e);
-      HoverDot.update(canvas, e, getCellSize(), this.brush);
-      if (this.drawing) paintAt(x, y, this.eraseMode ? 0 : 1);
-    });
-    canvas.addEventListener('mouseleave', () => HoverDot.hide());
-  }
-};
 
-// ---------------------------------------------------------------------------
-// ImageInput — static image -> initial cell states. Draws the source image
-// onto a cols x rows offscreen canvas (same "shrink to grid resolution"
-// trick the Renderer uses in reverse), reads pixel luma, and thresholds it
-// into a binary Uint8Array the same shape as GridState.cells.
-//
-// This is intentionally a pure sampling function with no simulation
-// knowledge — a future video/camera input source can reuse sampleBinary()
-// unchanged, calling it once per frame instead of once per upload.
-// ---------------------------------------------------------------------------
-const ImageInput = {
-  loadFile(file, onLoaded) {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => { onLoaded(img); URL.revokeObjectURL(url); };
-    img.onerror = () => { URL.revokeObjectURL(url); onLoaded(null); };
-    img.src = url;
-  },
+        // Only one knob's range/speed panel is ever open at a time (an
+        // accordion, not a stack) - opening a different one closes whatever
+        // was open, and it also closes on its own if you mouse away from the
+        // card. None of this touches activeAnimations: a knob that's cycling
+        // keeps cycling in the background even while its panel is closed -
+        // only the Stop button actually ends the cycle.
+        let expandedParam = null;
 
-  // Draws `img` into a w x h canvas per `fit` ('cover' | 'contain' | 'stretch'),
-  // matching the familiar CSS background-size semantics.
-  drawFitted(ctx, img, w, h, fit) {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, w, h);
-    if (fit === 'stretch') { ctx.drawImage(img, 0, 0, w, h); return; }
-    const scale = fit === 'cover'
-      ? Math.max(w / img.width, h / img.height)
-      : Math.min(w / img.width, h / img.height); // contain
-    const dw = img.width * scale, dh = img.height * scale;
-    ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
-  },
+        function findKnobCard(paramName) {
+            const knobEl = document.querySelector('.knob[data-target="' + paramName + '"]');
+            return knobEl ? knobEl.closest('.knob-card') : null;
+        }
 
-  // Returns a cols*rows Uint8Array of 0/1, thresholded from image luma.
-  sampleBinary(img, cols, rows, { fit = 'cover', threshold = 0.5, invert = false } = {}) {
-    const off = document.createElement('canvas');
-    off.width = cols; off.height = rows;
-    const ctx = off.getContext('2d');
-    this.drawFitted(ctx, img, cols, rows, fit);
-    const data = ctx.getImageData(0, 0, cols, rows).data;
-    const out = new Uint8Array(cols * rows);
-    for (let i = 0; i < cols * rows; i++) {
-      const p = i * 4;
-      const luma = (data[p] * 0.299 + data[p + 1] * 0.587 + data[p + 2] * 0.114) / 255;
-      let alive = luma >= threshold;
-      if (invert) alive = !alive;
-      out[i] = alive ? 1 : 0;
-    }
-    return out;
-  }
-};
+        function collapseParamPanel(paramName) {
+            const rangeDiv = document.getElementById('anim-range-' + paramName);
+            if (!rangeDiv) return;
+            rangeDiv.classList.remove('visible');
+            const card = findKnobCard(paramName);
+            if (card) card.classList.remove('linked');
+            if (expandedParam === paramName) expandedParam = null;
+        }
 
-const HoverDot = {
-  el: document.getElementById('hoverDot'),
-  update(canvas, evt, cellSize, brush) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = rect.width / canvas.width;
-    const scaleY = rect.height / canvas.height;
-    const cssCell = cellSize * scaleX;
-    const gx = Math.floor((evt.clientX - rect.left) / cssCell);
-    const gy = Math.floor((evt.clientY - rect.top) / (cellSize * scaleY));
-    const size = (brush * 2 - 1) * cssCell;
-    this.el.style.display = 'block';
-    this.el.style.width = size + 'px';
-    this.el.style.height = size + 'px';
-    this.el.style.left = (rect.left - canvas.parentElement.getBoundingClientRect().left + (gx - (brush - 1)) * cssCell) + 'px';
-    this.el.style.top = (rect.top - canvas.parentElement.getBoundingClientRect().top + (gy - (brush - 1)) * cssCell) + 'px';
-  },
-  hide() { this.el.style.display = 'none'; }
-};
+        function expandParamPanel(paramName) {
+            if (expandedParam && expandedParam !== paramName) collapseParamPanel(expandedParam);
+            cancelPanelClose();
+            const rangeDiv = document.getElementById('anim-range-' + paramName);
+            rangeDiv.classList.add('visible');
+            const card = findKnobCard(paramName);
+            if (card) card.classList.add('linked');
+            expandedParam = paramName;
+        }
 
-// ---------------------------------------------------------------------------
-// Serialization helpers — Uint8Array <-> base64, so grid buffers pack
-// compactly into JSON (and into a URL fragment for sharing).
-// ---------------------------------------------------------------------------
-function u8ToBase64(u8) {
-  let binary = '';
-  const chunk = 0x8000;
-  for (let i = 0; i < u8.length; i += chunk) {
-    binary += String.fromCharCode.apply(null, u8.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
-function base64ToU8(b64) {
-  const binary = atob(b64);
-  const u8 = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) u8[i] = binary.charCodeAt(i);
-  return u8;
-}
+        // Play button: starts this parameter's cycle (picking a fresh random
+        // from/to range each time, like the old dice behavior did), and opens
+        // its range + per-knob speed controls. Only this button ever starts
+        // the animation loop for a parameter.
+        function startParamCycle(paramName) {
+            const slider = document.getElementById(paramName);
+            const min = parseFloat(slider.min), max = parseFloat(slider.max), step = parseFloat(slider.step) || 1;
+            const span = max - min;
+            const minGap = Math.max(step, span * 0.2);
 
-// ---------------------------------------------------------------------------
-// RulePresetsStore — named rule configs (family + params only, no grid data)
-// persisted to localStorage so they survive across sessions and can be
-// reused at any resolution. This is separate from full-state save/load below.
-// ---------------------------------------------------------------------------
-const RulePresetsStore = {
-  KEY: 'ca_studio_rule_presets_v1',
-  load() {
-    try { return JSON.parse(localStorage.getItem(this.KEY) || '[]'); }
-    catch (e) { return []; }
-  },
-  persist(list) {
-    try { localStorage.setItem(this.KEY, JSON.stringify(list)); }
-    catch (e) { /* storage unavailable (e.g. private browsing) — fail quietly */ }
-  },
-  add(name, config) {
-    const list = this.load().filter(p => p.name !== name);
-    list.push({ name, config });
-    this.persist(list);
-    return list;
-  },
-  remove(name) {
-    const list = this.load().filter(p => p.name !== name);
-    this.persist(list);
-    return list;
-  }
-};
+            let a = min + Math.random() * span;
+            let b = min + Math.random() * span;
+            if (Math.abs(a - b) < minGap) b = a + minGap;
 
-// ---------------------------------------------------------------------------
-// Sim — orchestrates the main loop: timing, rule dispatch, rendering.
-// ---------------------------------------------------------------------------
-const Sim = {
-  canvas: document.getElementById('view'),
-  ctx: null,
-  state: null,
-  cellSize: 6,
-  wrap: true,
-  family: 'life',
-  bs: RuleEngine.parseBS('B3/S23'),
-  elementaryRuleNumber: 30,
-  elementaryLastRow: null,
-  colorScheme: 'thermal',
-  customStops: ['#0a0a1e', '#2a5b9c', '#ff2fb0', '#fef6c9'],
-  lastImage: null, // currently loaded <img>, if any — used to re-sample live as controls change
-  imageOpts: { fit: 'cover', threshold: 0.5, invert: false },
-  pauseOnImageSeed: true,
-  imageFeedInterval: 0, // 0 = one-shot seed only; >0 = re-inject the image every N generations
-  imageFeedCounter: 0,
-  running: true,
-  suppressAutoFit: false,
-  stepsPerSec: 12,
-  trailLength: 20, // frames a dead cell's afterglow takes to fade to background; 0 = off
-  accumulator: 0,
-  lastTime: 0,
-  fpsAccum: 0, fpsFrames: 0, fpsLast: 0,
+            let lo = Math.min(a, b), hi = Math.max(a, b);
+            lo = Math.max(min, roundToStep(lo, step));
+            hi = Math.min(max, roundToStep(hi, step));
+            if (hi <= lo) hi = Math.min(max, lo + step);
 
-  init() {
-    this.ctx = this.canvas.getContext('2d');
-    this.resizeCanvas();
-    window.addEventListener('resize', () => this.resizeCanvas());
-    MouseInput.attach(
-      this.canvas,
-      () => this.state,
-      () => this.cellSize,
-      () => this.redraw()
-    );
-    requestAnimationFrame((t) => this.loop(t));
-  },
+            setDualRange(paramName, lo, hi);
 
-  // Single place that knows how to re-render the current state — keeps every
-  // call site in sync with the active color scheme AND trail length.
-  redraw() {
-    Renderer.draw(this.state, this.colorScheme, this.trailLength);
-  },
+            const btn = document.getElementById('anim-btn-' + paramName);
+            const stopBtn = document.getElementById('anim-stop-' + paramName);
 
-  // Pushes this.customStops (hex strings) into Palettes.custom.stops (rgb
-  // arrays) so the renderer picks up whatever the swatch editor last set.
-  syncCustomPaletteFromStops() {
-    Palettes.custom.stops = this.customStops.map(hexToRgb);
-  },
+            activeAnimations[paramName] = true;
+            animStartTimes[paramName] = performance.now();
+            btn.classList.add('active');
+            if (stopBtn) stopBtn.classList.remove('disabled');
+            ensureParamSpeedDefault(paramName);
+            expandParamPanel(paramName);
+            startAnimLoop();
+        }
 
-  resizeCanvas() {
-    if (this.suppressAutoFit) return; // a loaded/shared state dictates its own grid size
-    const stage = document.getElementById('stage');
-    const w = stage.clientWidth, h = stage.clientHeight;
-    const cols = Math.max(10, Math.floor(w / this.cellSize));
-    const rows = Math.max(10, Math.floor(h / this.cellSize));
-    this.canvas.width = cols * this.cellSize;
-    this.canvas.height = rows * this.cellSize;
-    this.canvas.style.width = this.canvas.width + 'px';
-    this.canvas.style.height = this.canvas.height + 'px';
-    if (!this.state || this.state.cols !== cols || this.state.rows !== rows) {
-      this.state = new GridState(cols, rows);
-      Renderer.init(cols, rows);
-      if (this.family === 'elementary') this.seedElementary();
-    }
-  },
+        // Stop button: stops this parameter's cycle and closes its panel.
+        // The only way a running cycle is turned off.
+        function stopParamCycle(paramName) {
+            if (!activeAnimations[paramName]) return;
+            const btn = document.getElementById('anim-btn-' + paramName);
+            const stopBtn = document.getElementById('anim-stop-' + paramName);
 
-  // --- rule-only config: family + params, no grid data (for named presets) -
-  ruleConfig() {
-    const cfg = { family: this.family, wrap: this.wrap };
-    if (this.family === 'life') cfg.bs = RuleEngine.bsToString(this.bs);
-    if (this.family === 'elementary') cfg.ruleNumber = this.elementaryRuleNumber;
-    return cfg;
-  },
+            delete activeAnimations[paramName];
+            btn.classList.remove('active');
+            if (stopBtn) stopBtn.classList.add('disabled');
+            collapseParamPanel(paramName);
+            if (Object.keys(activeAnimations).length === 0) stopAnimLoop();
+        }
 
-  applyRuleConfig(cfg) {
-    this.family = cfg.family;
-    this.wrap = !!cfg.wrap;
-    if (cfg.family === 'life' && cfg.bs) this.bs = RuleEngine.parseBS(cfg.bs);
-    if (cfg.family === 'elementary' && cfg.ruleNumber != null) this.elementaryRuleNumber = cfg.ruleNumber;
-    if (this.family === 'elementary') this.seedElementary();
-    else this.state.clear();
-    this.redraw();
-  },
+        function stopAllAnimations() {
+            for (const paramName in activeAnimations) {
+                const btn = document.getElementById('anim-btn-' + paramName);
+                const stopBtn = document.getElementById('anim-stop-' + paramName);
+                if (btn) btn.classList.remove('active');
+                if (stopBtn) stopBtn.classList.add('disabled');
+                collapseParamPanel(paramName);
+            }
+            activeAnimations = {};
+            expandedParam = null;
+            stopAnimLoop();
+        }
 
-  // --- full state: grid + rule + view, JSON-serializable -------------------
-  serialize() {
-    const s = this.state;
-    const obj = {
-      version: 1,
-      family: this.family,
-      wrap: this.wrap,
-      cellSize: this.cellSize,
-      colorScheme: this.colorScheme,
-      customStops: this.customStops.slice(),
-      stepsPerSec: this.stepsPerSec,
-      trailLength: this.trailLength,
-      cols: s.cols,
-      rows: s.rows,
-      generation: s.generation,
-      cells: u8ToBase64(s.cells),
-    };
-    if (this.family === 'life') obj.bs = RuleEngine.bsToString(this.bs);
-    if (this.family === 'elementary') obj.ruleNumber = this.elementaryRuleNumber;
-    return obj;
-  },
+        function startAnimLoop() {
+            if (animLoopHandle) return;
+            lastHeavyRebuild = 0;
+            animLoopHandle = requestAnimationFrame(animFrame);
+        }
 
-  applyState(obj) {
-    this.family = obj.family;
-    this.wrap = !!obj.wrap;
-    this.cellSize = obj.cellSize || this.cellSize;
-    this.colorScheme = obj.colorScheme || this.colorScheme;
-    if (Array.isArray(obj.customStops) && obj.customStops.length >= 2) {
-      this.customStops = obj.customStops.slice();
-      this.syncCustomPaletteFromStops();
-    } else if (obj.customPaletteStopsStr) {
-      // legacy save format from an earlier version — still loadable
-      const stops = parseCustomStops(obj.customPaletteStopsStr);
-      if (stops) {
-        this.customStops = stops.map(rgbToHex);
-        this.syncCustomPaletteFromStops();
-      }
-    }
-    this.stepsPerSec = obj.stepsPerSec || this.stepsPerSec;
-    this.trailLength = obj.trailLength != null ? obj.trailLength : this.trailLength;
-    if (obj.family === 'life' && obj.bs) this.bs = RuleEngine.parseBS(obj.bs);
-    if (obj.family === 'elementary' && obj.ruleNumber != null) this.elementaryRuleNumber = obj.ruleNumber;
+        function stopAnimLoop() {
+            if (animLoopHandle) {
+                cancelAnimationFrame(animLoopHandle);
+                animLoopHandle = null;
+            }
+            crossfadeActive = false;
+            if (sceneBuffer) image(sceneBuffer, 0, 0);
+        }
 
-    const cols = obj.cols, rows = obj.rows;
-    this.state = new GridState(cols, rows);
-    this.state.cells.set(base64ToU8(obj.cells));
-    this.state.generation = obj.generation || 0;
-    // Note: trails are an ephemeral decaying visual effect, not core sim
-    // data — they intentionally reset to empty on load rather than being
-    // serialized, so a loaded state starts with a clean (non-fading) frame.
+        // Full circle-packing is too expensive to redo every animation frame,
+        // so heavy parameters only trigger a rebuild every HEAVY_REBUILD_INTERVAL
+        // ms. Lightweight parameters (hue rotation, glow intensity) just repaint
+        // the existing forms, so those run at full frame rate for smooth motion.
+        // The "Smoothness" knob controls that interval directly: turning it up
+        // rebuilds more often (choppier motion becomes fluid, at a CPU cost),
+        // turning it down rebuilds less often (cheaper, chunkier motion).
+        let lastHeavyRebuild = 0;
+        const MAX_REBUILD_INTERVAL = 260; // smoothness = 0
+        const MIN_REBUILD_INTERVAL = 40;  // smoothness = 100
+        function getHeavyRebuildInterval() {
+            let t = Math.min(1, Math.max(0, animSmoothness / 100));
+            return MAX_REBUILD_INTERVAL - t * (MAX_REBUILD_INTERVAL - MIN_REBUILD_INTERVAL);
+        }
+        const MAX_BLEND_MS = 140; // upper bound for the "Transition Blend" slider
 
-    this.suppressAutoFit = true;
-    this.canvas.width = cols * this.cellSize;
-    this.canvas.height = rows * this.cellSize;
-    this.canvas.style.width = this.canvas.width + 'px';
-    this.canvas.style.height = this.canvas.height + 'px';
-    Renderer.init(cols, rows);
+        let crossfadeActive = false;
+        let crossfadeStart = 0;
+        let crossfadeDuration = 0;
 
-    if (this.family === 'elementary') {
-      const base = cols * (rows - 1);
-      this.elementaryLastRow = this.state.cells.slice(base, base + cols);
-    }
+        function animFrame(now) {
+            let sawHeavy = false;
+            let sawLightweight = false;
 
-    this.redraw();
-    syncUIFromSim();
-  },
+            for (const paramName in activeAnimations) {
+                const fromEl = document.getElementById(paramName + '-from');
+                const toEl = document.getElementById(paramName + '-to');
+                if (!fromEl || !toEl) continue;
 
-  setFamily(family) {
-    this.family = family;
-    if (family === 'elementary') this.seedElementary();
-    else this.state.clear();
-    this.redraw();
-  },
+                const from = parseFloat(fromEl.value);
+                const to = parseFloat(toEl.value);
+                if (isNaN(from) || isNaN(to)) continue;
 
-  seedElementary() {
-    this.state.clear();
-    const row = new Uint8Array(this.state.cols);
-    row[Math.floor(row.length / 2)] = 1; // classic single-seed start
-    this.elementaryLastRow = row;
-    // place the seed on the bottom row so it's visible immediately
-    const base = this.state.cols * (this.state.rows - 1);
-    for (let x = 0; x < this.state.cols; x++) this.state.cells[base + x] = row[x];
-  },
+                const elapsed = (now - animStartTimes[paramName]) / 1000;
+                const speed = paramAnimSpeeds[paramName] !== undefined ? paramAnimSpeeds[paramName] : animSpeed;
+                const phase = 0.5 + 0.5 * Math.sin(elapsed * speed * Math.PI); // 0..1..0 ping-pong
+                const raw = from + (to - from) * phase;
 
-  randomize(densityPct) {
-    if (this.family === 'elementary') {
-      const row = new Uint8Array(this.state.cols);
-      for (let x = 0; x < row.length; x++) row[x] = Math.random() * 100 < densityPct ? 1 : 0;
-      this.state.clear();
-      this.elementaryLastRow = row;
-      const base = this.state.cols * (this.state.rows - 1);
-      for (let x = 0; x < this.state.cols; x++) this.state.cells[base + x] = row[x];
-    } else {
-      this.state.clear();
-      for (let i = 0; i < this.state.cells.length; i++) {
-        this.state.cells[i] = Math.random() * 100 < densityPct ? 1 : 0;
-      }
-    }
-    this.redraw();
-  },
+                const slider = document.getElementById(paramName);
+                const step = parseFloat(slider.step) || 1;
+                const rounded = roundToStep(raw, step);
 
-  clear() {
-    this.state.clear();
-    if (this.family === 'elementary') this.elementaryLastRow = new Uint8Array(this.state.cols);
-    this.redraw();
-  },
+                slider.value = rounded;
+                document.getElementById(paramName + '-value').textContent = rounded;
+                params[paramName] = rounded;
+                renderKnob(paramName);
 
-  // Seeds the grid from an already-loaded <img>, using ImageInput.sampleBinary
-  // at the current grid resolution. Re-callable cheaply, so the UI can
-  // re-sample live as the threshold/invert/fit controls change, or via an
-  // explicit "Resample" button without re-uploading anything.
-  seedFromImage(img, opts) {
-    if (!img) return;
-    this.imageOpts = opts;
-    const cols = this.state.cols, rows = this.state.rows;
-    const binary = ImageInput.sampleBinary(img, cols, rows, opts);
-    this.state.clear();
-    this.imageFeedCounter = 0;
-    if (this.family === 'elementary') {
-      const base = cols * (rows - 1);
-      const row = binary.slice(base, base + cols);
-      this.elementaryLastRow = row;
-      for (let x = 0; x < cols; x++) this.state.cells[base + x] = row[x];
-    } else {
-      this.state.cells.set(binary);
-    }
-    this.redraw();
-    if (this.pauseOnImageSeed) this.running = false; // let it sit before it evolves away
-  },
+                if (!lightweightAnimParams.includes(paramName)) sawHeavy = true;
+                else sawLightweight = true;
+            }
 
-  // Non-destructive variant used by the continuous-feed loop: ORs the
-  // image's live cells into whatever the simulation currently looks like,
-  // instead of replacing the grid — a sustained "light source" the
-  // automaton keeps reacting to rather than a one-time reset.
-  stampFromImage(img, opts) {
-    if (!img) return;
-    const cols = this.state.cols, rows = this.state.rows;
-    const binary = ImageInput.sampleBinary(img, cols, rows, opts);
-    if (this.family === 'elementary') {
-      const base = cols * (rows - 1);
-      this.elementaryLastRow = binary.slice(base, base + cols);
-    } else {
-      for (let i = 0; i < binary.length; i++) if (binary[i]) this.state.cells[i] = 1;
-    }
-  },
+            if (sawHeavy && (now - lastHeavyRebuild >= getHeavyRebuildInterval())) {
+                lastHeavyRebuild = now;
+                // snapshot the scene as it looks right now — this becomes the
+                // "from" side of the crossfade, so the transition always starts
+                // from whatever is actually on screen, even mid-fade
+                prevSceneBuffer.clear();
+                prevSceneBuffer.image(sceneBuffer, 0, 0);
+                initializeSystem(); // rebuilds forms and repaints into sceneBuffer
 
-  step() {
-    const s = this.state;
-    if (this.family === 'life') {
-      const next = RuleEngine.life.step(s, { wrap: this.wrap, bs: this.bs });
-      this.commit2D(next);
-    } else if (this.family === 'brain') {
-      const next = RuleEngine.brain.step(s, { wrap: this.wrap });
-      this.commit2D(next);
-    } else if (this.family === 'elementary') {
-      const opts = { wrap: this.wrap, ruleNumber: this.elementaryRuleNumber, lastRow: this.elementaryLastRow };
-      RuleEngine.elementary.step(s, opts); // mutates s.cells / s.ages in place
-      this.elementaryLastRow = opts.lastRow;
-    }
-    s.generation++;
-    document.getElementById('genCount').textContent = s.generation;
+                crossfadeDuration = (blendAmount / 100) * MAX_BLEND_MS;
+                if (crossfadeDuration > 0) {
+                    crossfadeActive = true;
+                    crossfadeStart = now;
+                } else {
+                    crossfadeActive = false;
+                }
+            } else if (sawLightweight) {
+                renderComposition(); // cheap repaint with the latest values every frame
+            }
 
-    // Continuous image feed: periodically re-inject the loaded image's live
-    // cells so it acts as a sustained input rather than a one-shot seed.
-    if (this.lastImage && this.imageFeedInterval > 0) {
-      this.imageFeedCounter++;
-      if (this.imageFeedCounter >= this.imageFeedInterval) {
-        this.imageFeedCounter = 0;
-        this.stampFromImage(this.lastImage, this.imageOpts);
-      }
-    }
-  },
+            // compositing: bleed the previous frame into the new one while a
+            // crossfade is in flight, otherwise just show the current scene
+            if (crossfadeActive) {
+                let t = (now - crossfadeStart) / crossfadeDuration;
+                if (t >= 1) { t = 1; crossfadeActive = false; }
+                let eased = t * t * (3 - 2 * t); // smoothstep, gentler than linear
+                image(prevSceneBuffer, 0, 0);
+                push();
+                tint(255, eased * 255);
+                image(sceneBuffer, 0, 0);
+                pop();
+                noTint();
+            } else {
+                image(sceneBuffer, 0, 0);
+            }
 
-  commit2D(nextCells) {
-    const s = this.state;
-    const trailLen = this.trailLength;
-    for (let i = 0; i < nextCells.length; i++) {
-      const wasAlive = s.cells[i] !== 0;
-      if (nextCells[i]) {
-        s.ages[i] = wasAlive ? Math.min(s.ages[i] + 1, 4000) : 0;
-        s.trails[i] = 0; // no afterglow while a cell is alive
-      } else {
-        s.ages[i] = 0;
-        if (wasAlive && trailLen > 0) s.trails[i] = trailLen;       // just died — start the fade
-        else if (s.trails[i] > 0) s.trails[i]--;                     // continue fading
-      }
-    }
-    s.cells = nextCells;
-  },
+            animLoopHandle = requestAnimationFrame(animFrame);
+        }
 
-  loop(t) {
-    if (!this.lastTime) this.lastTime = t;
-    const dt = t - this.lastTime;
-    this.lastTime = t;
+        // ═══════════════════════════════════════════════════════════════════════
+        // P5.JS GENERATIVE ALGORITHM — CONCENTRIC PACKING
+        // ═══════════════════════════════════════════════════════════════════════
 
-    this.fpsAccum += dt; this.fpsFrames++;
-    if (this.fpsAccum > 500) {
-      document.getElementById('fps').textContent = Math.round(this.fpsFrames * 1000 / this.fpsAccum);
-      this.fpsAccum = 0; this.fpsFrames = 0;
-    }
+        let forms = [];
+        let rng; // seeded pseudo-random generator (own implementation for total determinism)
+        let rngState;
 
-    if (this.running) {
-      this.accumulator += dt;
-      const interval = 1000 / this.stepsPerSec;
-      let steps = 0;
-      while (this.accumulator >= interval && steps < 8) { // cap to avoid spiral of death
-        this.step();
-        this.accumulator -= interval;
-        steps++;
-      }
-      if (steps > 0) this.redraw();
-    }
-    Renderer.present(this.ctx, this.canvas);
-    requestAnimationFrame((tt) => this.loop(tt));
-  }
-};
+        // The composition is always drawn into sceneBuffer first, then copied to
+        // the visible canvas. This lets animFrame() blend the old buffer
+        // (prevSceneBuffer) into the new one over a few frames instead of
+        // popping instantly whenever a heavy parameter triggers a rebuild.
+        let sceneBuffer, prevSceneBuffer;
 
-// ---------------------------------------------------------------------------
-// syncUIFromSim — after a load/share-link restore or a preset load, pushes
-// Sim's current values back into the controls so the sidebar doesn't lie.
-// ---------------------------------------------------------------------------
-function syncUIFromSim() {
-  const $ = (id) => document.getElementById(id);
-  $('familySelect').value = Sim.family;
-  $('lifeControls').style.display = Sim.family === 'life' ? 'block' : 'none';
-  $('elementaryControls').style.display = Sim.family === 'elementary' ? 'block' : 'none';
+        function ensureBuffers() {
+            if (sceneBuffer) sceneBuffer.remove();
+            if (prevSceneBuffer) prevSceneBuffer.remove();
+            sceneBuffer = createGraphics(params.canvasWidth, params.canvasHeight);
+            prevSceneBuffer = createGraphics(params.canvasWidth, params.canvasHeight);
+        }
 
-  if (Sim.family === 'life') {
-    const bsStr = RuleEngine.bsToString(Sim.bs);
-    $('customRule').value = bsStr;
-    $('lifePreset').value = LIFE_PRESETS[bsStr] ? bsStr : 'custom';
-  }
-  if (Sim.family === 'elementary') {
-    $('ruleNumSlider').value = Sim.elementaryRuleNumber;
-    $('ruleNumVal').textContent = Sim.elementaryRuleNumber;
-  }
+        // Used for any non-animated change (manual slider drag, seed change,
+        // palette edit, reset, etc.) so those stay instant with no crossfade.
+        function compositeStatic() {
+            crossfadeActive = false;
+            image(sceneBuffer, 0, 0);
+        }
 
-  $('cellSizeSlider').value = Sim.cellSize;
-  $('cellSizeVal').textContent = Sim.cellSize + 'px';
+        function setup() {
+            computeCanvasSizeForPreset('fit');
 
-  document.querySelectorAll('#edgeToggle button').forEach(b => {
-    b.classList.toggle('active', (b.dataset.edge === 'wrap') === Sim.wrap);
-  });
+            let canvas = createCanvas(params.canvasWidth, params.canvasHeight);
+            canvas.parent('canvas-container');
+            ensureBuffers();
 
-  $('speedSlider').value = Sim.stepsPerSec;
-  $('speedVal').textContent = Sim.stepsPerSec + '/s';
+            renderPaletteGrid();
+            initializeSystem();
+            compositeStatic();
 
-  $('colorScheme').value = Sim.colorScheme;
-  const isCustomPalette = Sim.colorScheme === 'custom';
-  $('customPaletteRow').style.display = isCustomPalette ? 'flex' : 'none';
-  if (isCustomPalette) renderCustomSwatches();
-  $('trailSlider').value = Sim.trailLength;
-  $('trailVal').textContent = Sim.trailLength;
+            document.querySelector('.loading').style.display = 'none';
+        }
 
-  document.getElementById('genCount').textContent = Sim.state.generation;
-}
+        function getAvailableCanvasSize() {
+            let area = document.querySelector('.canvas-area');
+            let w = Math.max(400, Math.floor(area.clientWidth));
+            let h = Math.max(400, Math.floor(area.clientHeight));
+            return { w, h };
+        }
 
-// Builds the row of native <input type=color> swatches for the custom
-// palette, one per entry in Sim.customStops. Each swatch doubles as the
-// color picker itself — click it, pick a color, it commits immediately.
-function renderCustomSwatches() {
-  const container = document.getElementById('customSwatches');
-  container.innerHTML = '';
-  Sim.customStops.forEach((hex, i) => {
-    const input = document.createElement('input');
-    input.type = 'color';
-    input.className = 'swatch';
-    input.value = hex;
-    input.title = `Stop ${i + 1}`;
-    input.addEventListener('input', (e) => {
-      Sim.customStops[i] = e.target.value;
-      Sim.syncCustomPaletteFromStops();
-      if (Sim.colorScheme === 'custom') Sim.redraw();
-    });
-    container.appendChild(input);
-  });
-}
+        function computeCanvasSizeForPreset(preset) {
+            let area = getAvailableCanvasSize();
+            if (preset === 'fit') {
+                params.canvasWidth = area.w;
+                params.canvasHeight = area.h;
+            } else {
+                let [wp, hp] = preset.split(':').map(Number);
+                let ratio = wp / hp;
+                let w = area.w, h = w / ratio;
+                if (h > area.h) { h = area.h; w = h * ratio; }
+                params.canvasWidth = Math.floor(w);
+                params.canvasHeight = Math.floor(h);
+            }
+            params.canvasPreset = preset;
+        }
 
-function refreshPresetSelect() {
-  const sel = document.getElementById('myPresets');
-  const list = RulePresetsStore.load();
-  sel.innerHTML = list.length
-    ? list.map(p => `<option value="${encodeURIComponent(p.name)}">${p.name}</option>`).join('')
-    : '<option value="">— none saved —</option>';
-}
+        function applyCanvasPreset(preset) {
+            computeCanvasSizeForPreset(preset);
+            resizeCanvas(params.canvasWidth, params.canvasHeight);
+            ensureBuffers();
+            initializeSystem();
+            compositeStatic();
+        }
 
-// ---------------------------------------------------------------------------
-// UI wiring
-// ---------------------------------------------------------------------------
-function wireUI() {
-  const $ = (id) => document.getElementById(id);
+        function updateBgColor(value) {
+            params.backgroundColor = value;
+            document.querySelector('.bg-swatch-row .swatch').style.background = value;
+            renderComposition();
+            compositeStatic();
+        }
 
-  // Family
-  $('familySelect').addEventListener('change', (e) => {
-    const f = e.target.value;
-    $('lifeControls').style.display = f === 'life' ? 'block' : 'none';
-    $('elementaryControls').style.display = f === 'elementary' ? 'block' : 'none';
-    Sim.setFamily(f);
-  });
+        function regenerate() {
+            params.seed = Math.floor(Math.random() * 999999) + 1;
+            updateSeedDisplay();
+            initializeSystem();
+            compositeStatic();
+        }
 
-  // Life presets / custom rule
-  $('lifePreset').addEventListener('change', (e) => {
-    if (e.target.value === 'custom') { $('customRule').focus(); return; }
-    $('customRule').value = e.target.value;
-    applyLifeRule(e.target.value);
-  });
-  $('customRule').addEventListener('change', (e) => applyLifeRule(e.target.value));
-  function applyLifeRule(str) {
-    const parsed = RuleEngine.parseBS(str);
-    if (parsed) Sim.bs = parsed;
-  }
+        // --- deterministic PRNG (mulberry32) so seeded runs are 100% reproducible ---
+        function seedRng(seed) {
+            rngState = seed >>> 0;
+        }
+        function rnd() {
+            rngState |= 0; rngState = (rngState + 0x6D2B79F5) | 0;
+            let t = Math.imul(rngState ^ (rngState >>> 15), 1 | rngState);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        }
+        function rndRange(a, b) { return a + rnd() * (b - a); }
 
-  // Elementary rule number
-  $('ruleNumSlider').addEventListener('input', (e) => {
-    Sim.elementaryRuleNumber = Number(e.target.value);
-    $('ruleNumVal').textContent = e.target.value;
-  });
-  document.querySelectorAll('[data-rule]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const n = Number(btn.dataset.rule);
-      Sim.elementaryRuleNumber = n;
-      $('ruleNumSlider').value = n;
-      $('ruleNumVal').textContent = n;
-    });
-  });
+        function initializeSystem() {
+            randomSeed(params.seed);
+            noiseSeed(params.seed);
+            seedRng(params.seed * 2654435761 % 2147483647);
 
-  // Cell size
-  $('cellSizeSlider').addEventListener('input', (e) => {
-    Sim.cellSize = Number(e.target.value);
-    $('cellSizeVal').textContent = e.target.value + 'px';
-    Sim.resizeCanvas();
-  });
+            forms = [];
 
-  // Edge toggle
-  document.querySelectorAll('#edgeToggle button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#edgeToggle button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      Sim.wrap = btn.dataset.edge === 'wrap';
-    });
-  });
+            buildRadiusPlan();
+            packForms();
+            addNestedSatellites();
+            assignRingRecipes();
 
-  // Speed
-  $('speedSlider').addEventListener('input', (e) => {
-    Sim.stepsPerSec = Number(e.target.value);
-    $('speedVal').textContent = e.target.value + '/s';
-  });
+            renderComposition();
 
-  // Play / step / reset
-  $('playBtn').addEventListener('click', togglePlay);
-  $('stepBtn').addEventListener('click', () => { Sim.step(); Sim.redraw(); });
-  $('resetBtn').addEventListener('click', () => Sim.clear());
+            document.querySelector('.loading').style.display = 'none';
+        }
 
-  function togglePlay() {
-    Sim.running = !Sim.running;
-    syncPlayButton();
-  }
-  function syncPlayButton() {
-    $('playBtn').textContent = Sim.running ? 'Pause' : 'Play';
-  }
+        // Build a mixed population of radii: a few giants, a mid population, fine dust
+        let radiusPlan = [];
+        function buildRadiusPlan() {
+            radiusPlan = [];
+            let n = params.formCount;
+            let maxR = params.maxRadius;
+            let giants = Math.max(4, Math.round(n * 0.06));
+            let mediums = Math.round(n * 0.32);
+            let dust = n - giants - mediums;
 
-  // Color — palette (Gradient Map) dropdown is built from PALETTE_ORDER, so
-  // adding a palette to the Palettes object is enough to have it show up here.
-  $('colorScheme').innerHTML = PALETTE_ORDER
-    .map(key => `<option value="${key}"${key === Sim.colorScheme ? ' selected' : ''}>${Palettes[key].label}</option>`)
-    .join('');
-  Sim.syncCustomPaletteFromStops(); // seed Palettes.custom.stops even if not currently selected
-  renderCustomSwatches();
+            for (let i = 0; i < giants; i++) {
+                radiusPlan.push(rndRange(maxR * 0.55, maxR));
+            }
+            for (let i = 0; i < mediums; i++) {
+                radiusPlan.push(rndRange(maxR * 0.16, maxR * 0.42));
+            }
+            for (let i = 0; i < dust; i++) {
+                // power-law bias toward small
+                let t = Math.pow(rnd(), 2.6);
+                radiusPlan.push(rndRange(maxR * 0.015, maxR * 0.14) + t * maxR * 0.02);
+            }
+            // largest first so giants claim territory before it fills up
+            radiusPlan.sort((a, b) => b - a);
+        }
 
-  $('colorScheme').addEventListener('change', (e) => {
-    Sim.colorScheme = e.target.value;
-    const isCustom = Sim.colorScheme === 'custom';
-    $('customPaletteRow').style.display = isCustom ? 'flex' : 'none';
-    if (isCustom) renderCustomSwatches();
-    Sim.redraw();
-  });
-  $('addStopBtn').addEventListener('click', () => {
-    if (Sim.customStops.length >= 6) return;
-    Sim.customStops.push(Sim.customStops[Sim.customStops.length - 1] || '#ffffff');
-    renderCustomSwatches();
-    Sim.syncCustomPaletteFromStops();
-    if (Sim.colorScheme === 'custom') Sim.redraw();
-  });
-  $('removeStopBtn').addEventListener('click', () => {
-    if (Sim.customStops.length <= 2) return;
-    Sim.customStops.pop();
-    renderCustomSwatches();
-    Sim.syncCustomPaletteFromStops();
-    if (Sim.colorScheme === 'custom') Sim.redraw();
-  });
-  $('trailSlider').addEventListener('input', (e) => {
-    Sim.trailLength = Number(e.target.value);
-    $('trailVal').textContent = e.target.value;
-    Sim.redraw();
-  });
+        function packForms() {
+            let attemptsPerForm = 70;
+            let shrinkSteps = 4;
 
-  // Randomize / clear
-  $('densitySlider').addEventListener('input', (e) => $('densityVal').textContent = e.target.value + '%');
-  $('randomizeBtn').addEventListener('click', () => Sim.randomize(Number($('densitySlider').value)));
-  $('clearBtn').addEventListener('click', () => Sim.clear());
+            for (let radius of radiusPlan) {
+                let r = radius;
+                let placed = false;
 
-  // Image input — static image -> initial cell states
-  function imageOpts() {
-    const opts = {
-      fit: $('imageFit').value,
-      threshold: Number($('imgThresholdSlider').value) / 100,
-      invert: $('imgInvert').checked,
-    };
-    Sim.imageOpts = opts; // keep Sim's copy current so the continuous-feed loop in step() sees live values
-    return opts;
-  }
-  function seedFromImageAndSync() {
-    Sim.seedFromImage(Sim.lastImage, imageOpts());
-    syncPlayButton(); // seedFromImage may auto-pause
-  }
-  $('chooseImageBtn').addEventListener('click', () => $('imageFileInput').click());
-  $('imageFileInput').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    $('imageStatus').textContent = 'Loading…';
-    ImageInput.loadFile(file, (img) => {
-      if (!img) { $('imageStatus').textContent = "Couldn't load that image."; return; }
-      Sim.lastImage = img;
-      seedFromImageAndSync();
-      $('imageStatus').textContent = `Loaded ${file.name} (${img.width}×${img.height}).`;
-      $('resampleImageBtn').disabled = false;
-      $('removeImageRow').style.display = 'flex';
-    });
-    e.target.value = ''; // allow re-choosing the same file later
-  });
-  $('resampleImageBtn').addEventListener('click', () => { if (Sim.lastImage) seedFromImageAndSync(); });
-  $('clearImageBtn').addEventListener('click', () => {
-    Sim.lastImage = null;
-    $('resampleImageBtn').disabled = true;
-    $('removeImageRow').style.display = 'none';
-    $('imageStatus').textContent = 'No image loaded.';
-  });
-  // Fit / threshold / invert re-sample live if an image is already loaded —
-  // no need to re-upload just to try a different threshold.
-  $('imageFit').addEventListener('change', () => { if (Sim.lastImage) seedFromImageAndSync(); });
-  $('imgThresholdSlider').addEventListener('input', (e) => {
-    $('imgThresholdVal').textContent = e.target.value + '%';
-    if (Sim.lastImage) seedFromImageAndSync();
-  });
-  $('imgInvert').addEventListener('change', () => { if (Sim.lastImage) seedFromImageAndSync(); });
-  $('imgPauseOnSeed').addEventListener('change', (e) => { Sim.pauseOnImageSeed = e.target.checked; });
-  $('imageFeedSlider').addEventListener('input', (e) => {
-    Sim.imageFeedInterval = Number(e.target.value);
-    Sim.imageFeedCounter = 0;
-    $('imageFeedVal').textContent = Sim.imageFeedInterval === 0 ? 'Off' : `every ${Sim.imageFeedInterval}`;
-  });
+                for (let shrink = 0; shrink <= shrinkSteps && !placed; shrink++) {
+                    for (let a = 0; a < attemptsPerForm; a++) {
+                        let x = rndRange(-r * 0.15, width + r * 0.15);
+                        let y = rndRange(-r * 0.15, height + r * 0.15);
 
-  // Brush
-  $('brushSlider').addEventListener('input', (e) => {
-    MouseInput.brush = Number(e.target.value);
-    $('brushVal').textContent = e.target.value;
-  });
+                        if (isValidPlacement(x, y, r)) {
+                            forms.push(makeForm(x, y, r, false));
+                            placed = true;
+                            break;
+                        }
+                    }
+                    if (!placed) r *= 0.8; // shrink into remaining gaps
+                }
+            }
+        }
 
-  // Keyboard shortcuts (ignore while typing in a text field)
-  window.addEventListener('keydown', (e) => {
-    const tag = document.activeElement.tagName;
-    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
-    if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
-    else if (e.key.toLowerCase() === 'c') Sim.clear();
-    else if (e.key.toLowerCase() === 'r') Sim.randomize(Number($('densitySlider').value));
-  });
+        function isValidPlacement(x, y, r) {
+            for (let f of forms) {
+                let d = dist(x, y, f.x, f.y);
+                let minAllowed = (r + f.r) * (1 - params.overlap);
+                if (d < minAllowed) return false;
+            }
+            return true;
+        }
 
-  // --- Rule presets (family + params only; saved to localStorage) ---------
-  refreshPresetSelect();
-  $('savePresetBtn').addEventListener('click', () => {
-    const name = $('presetName').value.trim();
-    if (!name) { $('presetName').focus(); return; }
-    RulePresetsStore.add(name, Sim.ruleConfig());
-    refreshPresetSelect();
-    $('myPresets').value = encodeURIComponent(name);
-    $('presetName').value = '';
-  });
-  $('loadPresetBtn').addEventListener('click', () => {
-    const name = decodeURIComponent($('myPresets').value || '');
-    const found = RulePresetsStore.load().find(p => p.name === name);
-    if (found) { Sim.applyRuleConfig(found.config); syncUIFromSim(); }
-  });
-  $('deletePresetBtn').addEventListener('click', () => {
-    const name = decodeURIComponent($('myPresets').value || '');
-    if (!name) return;
-    RulePresetsStore.remove(name);
-    refreshPresetSelect();
-  });
+        // Plant smaller children sharing the exact center of larger parents:
+        // true concentric nesting. Every child's own ring system is built
+        // around the same origin point as its parent, so the child's rings
+        // read as an inner continuation of the parent's rings rather than a
+        // separate shape drifting off-axis.
+        function addNestedSatellites() {
+            let base = forms.slice();
+            for (let parent of base) {
+                if (parent.r < 45) continue;
+                if (rnd() > params.nestProb) continue;
 
-  // --- Full-state save / load (.json) --------------------------------------
-  $('saveStateBtn').addEventListener('click', () => {
-    const obj = Sim.serialize();
-    const blob = new Blob([JSON.stringify(obj)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ca-state-${Sim.family}-${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  });
-  $('loadStateBtn').addEventListener('click', () => $('loadStateInput').click());
-  $('loadStateInput').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const obj = JSON.parse(reader.result);
-        Sim.applyState(obj);
-        $('shareStatus').textContent = 'Loaded ' + file.name;
-      } catch (err) {
-        $('shareStatus').textContent = 'Could not read that file — is it a valid saved state?';
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = ''; // allow reloading the same filename later
-  });
+                let count = 1 + Math.floor(rnd() * 3);
+                // distinct radii, largest first, so nested children stack
+                // as clean concentric layers instead of overlapping randomly
+                let radii = [];
+                for (let i = 0; i < count; i++) radii.push(parent.r * rndRange(0.14, 0.5));
+                radii.sort((a, b) => b - a);
 
-  // --- Share link: full state packed into a URL fragment -------------------
-  $('shareLinkBtn').addEventListener('click', async () => {
-    const obj = Sim.serialize();
-    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
-    const url = location.origin + location.pathname + '#state=' + encoded;
-    try {
-      await navigator.clipboard.writeText(url);
-      $('shareStatus').textContent = 'Link copied to clipboard.';
-    } catch (err) {
-      $('shareStatus').textContent = 'Clipboard blocked — link is in the address bar instead.';
-      history.replaceState(null, '', '#state=' + encoded);
-    }
-  });
+                for (let childR of radii) {
+                    forms.push(makeForm(parent.x, parent.y, childR, true));
+                }
+            }
+        }
 
-  // --- Restore from a share link on load, if present ------------------------
-  if (location.hash.startsWith('#state=')) {
-    try {
-      const encoded = location.hash.slice('#state='.length);
-      const obj = JSON.parse(decodeURIComponent(escape(atob(encoded))));
-      Sim.applyState(obj);
-      $('shareStatus').textContent = 'Restored from shared link.';
-    } catch (err) {
-      // malformed or truncated hash — ignore and fall back to the default boot state
-    }
-  }
-}
+        function makeForm(x, y, r, nested) {
+            let paletteLen = params.colorPalette.length;
+            let primary = Math.floor(rnd() * paletteLen);
+            let secondary = Math.floor(rnd() * paletteLen);
+            return {
+                x, y, r, nested,
+                primary, secondary,
+                accentChance: rndRange(0.08, 0.22),
+                phaseSeed: rnd() * 1000,
+                boldRingIndex: Math.floor(rnd() * 6),
+                nucleus: rnd() < 0.6
+            };
+        }
 
-// ---------------------------------------------------------------------------
-// Boot
-// ---------------------------------------------------------------------------
-Sim.init();
-const restoredFromLink = location.hash.startsWith('#state=');
-wireUI(); // may call Sim.applyState() if a #state= share link is present
-if (!restoredFromLink) Sim.randomize(30); // otherwise start with something alive on screen
-</script>
+        // Precompute each form's ring radii, weights, colors and render modes
+        function assignRingRecipes() {
+            for (let f of forms) {
+                f.rings = [];
+                f.filledBias = constrain(params.filledAmount + rndRange(-0.2, 0.2), 0, 0.95);
+
+                // spacing driven by user params: base gap scale (ringSpacing) and the
+                // growth curve between successive rings (spacingGrowth), echoing
+                // tree-ring dendrochronology and mitotic membrane spacing
+                let ringCount = Math.max(2, Math.round((f.r / 14) * params.ringDensity));
+                let radii = [];
+                let cursor = f.r;
+                let step = f.r * 0.12 * params.ringSpacing;
+                for (let i = 0; i < ringCount && cursor > f.r * 0.06; i++) {
+                    radii.push(cursor);
+                    let jitter = 1 + (noise(f.phaseSeed, i * 0.6) - 0.5) * 0.5;
+                    step *= (params.spacingGrowth + (noise(i * 0.3, f.phaseSeed) - 0.5) * 0.25);
+                    step = constrain(step, f.r * 0.02 * params.ringSpacing, f.r * 0.22 * params.ringSpacing);
+                    cursor -= step * jitter;
+                }
+                radii.sort((a, b) => a - b);
+
+                let prevR = 0;
+                for (let i = 0; i < radii.length; i++) {
+                    let useSecondary = (i % 2 === 1) !== (rnd() < f.accentChance);
+                    let colIdx = useSecondary ? f.secondary : f.primary;
+                    let colIdx2 = useSecondary ? f.primary : f.secondary;
+                    let isBold = (i === f.boldRingIndex);
+                    let baseWeight = map(f.r, 3, params.maxRadius, 0.5, 3.2, true);
+
+                    let roll = rnd();
+                    let mode = 'outline';
+                    if (roll < f.filledBias * 0.6) mode = 'filled';
+                    else if (roll < f.filledBias) mode = 'gradient';
+
+                    let weight, alpha;
+                    if (mode === 'outline') {
+                        weight = isBold ? baseWeight * rndRange(2.0, 3.2) : baseWeight * rndRange(0.5, 1.15);
+                        alpha = rndRange(150, 235);
+                    } else {
+                        weight = Math.max(1.2, (radii[i] - prevR) * rndRange(0.9, 1.05));
+                        alpha = rndRange(190, 255);
+                    }
+
+                    f.rings.push({
+                        radius: radii[i], innerRadius: prevR,
+                        colIdx, colIdx2, mode, weight, alpha,
+                        gradIdxs: mode === 'gradient' ? buildGradIdxs(colIdx, colIdx2) : null,
+                        glow: rnd() < params.glowChance
+                    });
+                    prevR = radii[i];
+                }
+            }
+        }
+
+        // Build a multi-stop color index sequence for richer gradient bands
+        function buildGradIdxs(colIdx, colIdx2) {
+            let n = Math.round(params.gradientComplexity);
+            let paletteLen = params.colorPalette.length;
+            let idxs = [colIdx];
+            for (let s = 1; s < n - 1; s++) idxs.push(Math.floor(rnd() * paletteLen));
+            if (n > 1) idxs.push(colIdx2);
+            return idxs;
+        }
+
+        function drawRingStroke(g, f, radius, weight, col) {
+            g.noFill();
+            g.strokeWeight(weight);
+            g.stroke(col);
+            g.circle(f.x, f.y, radius * 2);
+        }
+
+        function drawRingDisc(g, f, radius, col) {
+            g.noStroke();
+            g.fill(col);
+            g.circle(f.x, f.y, radius * 2);
+        }
+
+        function hexWithAlpha(hex, alpha255) {
+            let c = color(hex);
+            return `rgba(${red(c)}, ${green(c)}, ${blue(c)}, ${alpha255 / 255})`;
+        }
+
+        // Gradient-filled annulus drawn with raw canvas 2D path so it can carry
+        // a true radial, multi-stop color blend across several palette hues
+        function drawRingAnnulusGradient(g, f, innerR, outerR, hexStops, alpha255) {
+            let ctx = g.drawingContext;
+            ctx.save();
+            let grad = ctx.createRadialGradient(f.x, f.y, Math.max(innerR, 0.001), f.x, f.y, outerR);
+            let n = hexStops.length;
+            for (let i = 0; i < n; i++) {
+                let pos = n === 1 ? 0 : i / (n - 1);
+                grad.addColorStop(constrain(pos, 0, 1), hexWithAlpha(hexStops[i], alpha255));
+            }
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, outerR, 0, Math.PI * 2, false);
+            ctx.arc(f.x, f.y, Math.max(innerR, 0.0001), 0, Math.PI * 2, true);
+            ctx.fill('evenodd');
+            ctx.restore();
+        }
+
+        // Cheap glow: a few translucent, wider strokes behind the ring instead of
+        // an expensive per-shape canvas blur filter (which tanked performance
+        // when applied broadly across hundreds of forms)
+        function drawGlowHalo(g, f, radius, hex, alpha) {
+            if (params.glowIntensity <= 0) return;
+            g.noFill();
+            let haloSteps = Math.max(1, Math.round(params.glowSteps));
+            for (let i = haloSteps; i >= 1; i--) {
+                let spread = i * (params.glowIntensity * 0.6);
+                let a = alpha * (0.16 / i);
+                g.stroke(colorFromHex(hex, a));
+                g.strokeWeight(spread * 2);
+                g.circle(f.x, f.y, radius * 2);
+            }
+        }
+
+        function renderComposition(target) {
+            let g = target || sceneBuffer;
+            computeRenderPalette();
+
+            let bg = color(params.backgroundColor);
+            g.background(bg);
+
+            for (let f of forms) {
+                for (let ring of f.rings) {
+                    let alpha = ring.alpha;
+
+                    if (ring.mode === 'filled') {
+                        let hex = renderPalette[ring.colIdx % renderPalette.length];
+                        if (ring.glow) drawGlowHalo(g, f, ring.radius, hex, alpha);
+                        let col = colorFromHex(hex, alpha);
+                        if (ring.innerRadius < 0.001) {
+                            drawRingDisc(g, f, ring.radius, col);
+                        } else {
+                            drawRingStroke(g, f, (ring.radius + ring.innerRadius) / 2, ring.weight, col);
+                        }
+                    } else if (ring.mode === 'gradient') {
+                        let hexStops = ring.gradIdxs.map(i => renderPalette[i % renderPalette.length]);
+                        if (ring.glow) drawGlowHalo(g, f, ring.radius, hexStops[0], alpha);
+                        drawRingAnnulusGradient(g, f, ring.innerRadius, ring.radius, hexStops, alpha);
+                    } else {
+                        let hex = renderPalette[ring.colIdx % renderPalette.length];
+                        if (ring.glow) drawGlowHalo(g, f, ring.radius, hex, alpha);
+                        let col = colorFromHex(hex, alpha);
+                        drawRingStroke(g, f, ring.radius, ring.weight, col);
+                    }
+                }
+
+                if (f.nucleus) {
+                    let nc = colorFromPalette(f.primary, 255 * 0.9);
+                    g.noStroke();
+                    g.fill(nc);
+                    g.circle(f.x, f.y, f.r * 0.05 + 1.5);
+                }
+            }
+        }
+
+        function draw() {
+            noLoop();
+        }
+
+        function colorFromHex(hex, alpha) {
+            let c = color(hex);
+            c.setAlpha(alpha);
+            return c;
+        }
+
+        function colorFromPalette(idx, alpha) {
+            return colorFromHex(renderPalette[idx % renderPalette.length], alpha);
+        }
+
+        // --- plain-JS hue rotation (independent of p5 colorMode state) ---
+        function hexToRgb(hex) {
+            hex = hex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(ch => ch + ch).join('');
+            let num = parseInt(hex, 16);
+            return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+        }
+        function rgbToHexStr(r, g, b) {
+            return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+        }
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            if (max === min) { h = s = 0; }
+            else {
+                let d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    default: h = (r - g) / d + 4;
+                }
+                h /= 6;
+            }
+            return { h, s, l };
+        }
+        function hslToRgb(h, s, l) {
+            let r, g, b;
+            if (s === 0) { r = g = b = l; }
+            else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1 / 6) return p + (q - p) * 6 * t;
+                    if (t < 1 / 2) return q;
+                    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                    return p;
+                };
+                let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                let p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1 / 3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1 / 3);
+            }
+            return { r: r * 255, g: g * 255, b: b * 255 };
+        }
+        function rotateHueHex(hex, degrees) {
+            let { r, g, b } = hexToRgb(hex);
+            let { h, s, l } = rgbToHsl(r, g, b);
+            h = ((h + degrees / 360) % 1 + 1) % 1;
+            let rgb = hslToRgb(h, s, l);
+            return rgbToHexStr(rgb.r, rgb.g, rgb.b);
+        }
+        function computeRenderPalette() {
+            let shift = ((params.colorCycleHue % 360) + 360) % 360;
+            renderPalette = shift === 0 ? params.colorPalette.slice()
+                : params.colorPalette.map(hex => rotateHueHex(hex, shift));
+        }
+
+        function downloadArt() {
+            sceneBuffer.save('eyes-bloom-seed-' + params.seed + '.png');
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // VECTOR (SVG) EXPORT
+        // ═══════════════════════════════════════════════════════════════════════
+        // Every shape on screen is already a plain circle, ring-stroke, or a
+        // radial-gradient annulus computed from the `forms` data - none of it
+        // is a raster effect - so the whole piece can be re-emitted as real
+        // SVG geometry (paths/gradients) rather than a rasterized PNG. Shapes
+        // are written in the exact same per-form, per-ring order used by
+        // renderComposition() so stacking/overlap matches the canvas exactly.
+        function circlePathD(cx, cy, r) {
+            // two-arc circle path, needed (rather than <circle>) so it can be
+            // combined with a second circle via evenodd to punch an annulus hole
+            return `M ${cx - r} ${cy} A ${r} ${r} 0 1 0 ${cx + r} ${cy} A ${r} ${r} 0 1 0 ${cx - r} ${cy} Z`;
+        }
+
+        function buildSVGMarkup() {
+            let w = params.canvasWidth, h = params.canvasHeight;
+            let defs = [];
+            let body = [];
+            let gradId = 0;
+
+            body.push(`<rect x="0" y="0" width="${w}" height="${h}" fill="${params.backgroundColor}"/>`);
+
+            function emitGlow(f, radius, hex, alpha255) {
+                let a = alpha255 / 255;
+                let haloSteps = Math.max(1, Math.round(params.glowSteps));
+                for (let i = haloSteps; i >= 1; i--) {
+                    let spread = i * (params.glowIntensity * 0.6);
+                    let stepAlpha = a * (0.16 / i);
+                    if (stepAlpha <= 0.0005 || spread <= 0) continue;
+                    body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${radius.toFixed(2)}" fill="none" stroke="${hex}" stroke-opacity="${stepAlpha.toFixed(4)}" stroke-width="${(spread * 2).toFixed(2)}"/>`);
+                }
+            }
+
+            for (let f of forms) {
+                for (let ring of f.rings) {
+                    let alpha = ring.alpha / 255;
+
+                    if (ring.mode === 'filled') {
+                        let hex = renderPalette[ring.colIdx % renderPalette.length];
+                        if (ring.glow) emitGlow(f, ring.radius, hex, ring.alpha);
+                        if (ring.innerRadius < 0.001) {
+                            body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${ring.radius.toFixed(2)}" fill="${hex}" fill-opacity="${alpha.toFixed(4)}"/>`);
+                        } else {
+                            let midR = (ring.radius + ring.innerRadius) / 2;
+                            body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${midR.toFixed(2)}" fill="none" stroke="${hex}" stroke-opacity="${alpha.toFixed(4)}" stroke-width="${ring.weight.toFixed(2)}"/>`);
+                        }
+                    } else if (ring.mode === 'gradient') {
+                        let hexStops = ring.gradIdxs.map(i => renderPalette[i % renderPalette.length]);
+                        if (ring.glow) emitGlow(f, ring.radius, hexStops[0], ring.alpha);
+                        let id = 'grad' + (gradId++);
+                        let stops = hexStops.map((hex, i) => {
+                            let pos = hexStops.length === 1 ? 0 : i / (hexStops.length - 1);
+                            return `<stop offset="${(pos * 100).toFixed(2)}%" stop-color="${hex}" stop-opacity="${alpha.toFixed(4)}"/>`;
+                        }).join('');
+                        defs.push(`<radialGradient id="${id}" cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${ring.radius.toFixed(2)}" gradientUnits="userSpaceOnUse">${stops}</radialGradient>`);
+                        let outerR = ring.radius, innerR = Math.max(ring.innerRadius, 0.0001);
+                        let d = circlePathD(f.x, f.y, outerR) + ' ' + circlePathD(f.x, f.y, innerR);
+                        body.push(`<path fill-rule="evenodd" fill="url(#${id})" d="${d}"/>`);
+                    } else {
+                        let hex = renderPalette[ring.colIdx % renderPalette.length];
+                        if (ring.glow) emitGlow(f, ring.radius, hex, ring.alpha);
+                        body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${ring.radius.toFixed(2)}" fill="none" stroke="${hex}" stroke-opacity="${alpha.toFixed(4)}" stroke-width="${ring.weight.toFixed(2)}"/>`);
+                    }
+                }
+
+                if (f.nucleus) {
+                    let hex = renderPalette[f.primary % renderPalette.length];
+                    let r = (f.r * 0.05 + 1.5) / 2;
+                    body.push(`<circle cx="${f.x.toFixed(2)}" cy="${f.y.toFixed(2)}" r="${r.toFixed(2)}" fill="${hex}" fill-opacity="0.9"/>`);
+                }
+            }
+
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">\n<defs>\n${defs.join('\n')}\n</defs>\n${body.join('\n')}\n</svg>`;
+        }
+
+        function downloadSVG() {
+            computeRenderPalette();
+            let svg = buildSVGMarkup();
+            let blob = new Blob([svg], { type: 'image/svg+xml' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'eyes-bloom-seed-' + params.seed + '.svg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // UI CONTROL HANDLERS - CUSTOMIZE FOR YOUR PARAMETERS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // ROTARY KNOBS
+        // ═══════════════════════════════════════════════════════════════════════
+        // Every knob is a thin visual + gesture skin over its existing hidden
+        // <input type=range class="knob-native">. The native input stays the
+        // single source of truth (min/max/step/value) so every other function
+        // in this file - updateParam, updateDualRange, the cycling loop,
+        // resetParameters, randomizeParamValue - keeps working untouched.
+        // Dragging a knob just sets input.value and dispatches a real 'input'
+        // event, which fires the input's existing oninput handler exactly as
+        // if the (now-hidden) native slider had been dragged.
+        let knobRegistry = {};
+
+        function knobValueToAngle(input, v) {
+            let min = parseFloat(input.min), max = parseFloat(input.max);
+            let t = (v - min) / (max - min);
+            t = Math.min(1, Math.max(0, t));
+            return -135 + t * 270; // hardware-style 270° sweep
+        }
+
+        function renderKnob(targetId) {
+            let entry = knobRegistry[targetId];
+            if (!entry) return;
+            let v = parseFloat(entry.input.value);
+            let angle = knobValueToAngle(entry.input, v);
+            entry.pointer.style.transform = `rotate(${angle}deg)`;
+            entry.knob.setAttribute('aria-valuenow', v);
+        }
+
+        function refreshAllKnobs() {
+            for (let id in knobRegistry) renderKnob(id);
+        }
+
+        // A knob's open panel closes on its own if the mouse leaves that
+        // card, so browsing other knobs doesn't leave a trail of open
+        // panels behind. Small grace delay so crossing the card while
+        // aiming for a slider handle doesn't close it prematurely.
+        // A knob's open panel closes on its own once the cursor has actually
+        // left its card for a while. This checks the card's live bounding
+        // box on every mousemove instead of relying on mouseenter/mouseleave
+        // targeting - expanding a card reflows the grid (it can jump to a
+        // new row), and that reflow was firing spurious leave/enter events
+        // on whatever element ended up under the cursor, closing panels that
+        // the cursor never actually left.
+        let panelCloseTimer = null;
+
+        function cancelPanelClose() {
+            if (panelCloseTimer) {
+                clearTimeout(panelCloseTimer);
+                panelCloseTimer = null;
+            }
+        }
+
+        function initPanelHoverClose() {
+            document.addEventListener('mousemove', (e) => {
+                if (!expandedParam) { cancelPanelClose(); return; }
+                const rangeDiv = document.getElementById('anim-range-' + expandedParam);
+                const card = findKnobCard(expandedParam);
+                if (!rangeDiv) return;
+
+                const margin = 10; // small buffer around the edge
+                const within = (rect) => rect && e.clientX >= rect.left - margin && e.clientX <= rect.right + margin &&
+                                          e.clientY >= rect.top - margin && e.clientY <= rect.bottom + margin;
+
+                // Counts as "still interacting" whether the cursor is on the
+                // knob itself (up in the grid) or on its panel (down in the
+                // section's shared detail area) - they're no longer the same
+                // element, but hovering either one should keep it open.
+                const inside = within(rangeDiv.getBoundingClientRect()) || (card && within(card.getBoundingClientRect()));
+
+                if (inside) {
+                    cancelPanelClose();
+                } else if (!panelCloseTimer) {
+                    const paramName = expandedParam;
+                    panelCloseTimer = setTimeout(() => {
+                        panelCloseTimer = null;
+                        if (expandedParam === paramName) collapseParamPanel(paramName);
+                    }, 900);
+                }
+            });
+
+            // Also stop watching a card the mouse is happily sitting inside
+            // when the page itself loses pointer focus (e.g. switching tabs)
+            document.addEventListener('mouseleave', () => cancelPanelClose());
+        }
+
+        function initKnobs() {
+            document.querySelectorAll('.knob[data-target]').forEach(knob => {
+                let targetId = knob.dataset.target;
+                let input = document.getElementById(targetId);
+                let pointer = knob.querySelector('.knob-pointer');
+                if (!input || !pointer) return;
+
+                knob.setAttribute('role', 'slider');
+                knob.setAttribute('aria-valuemin', input.min);
+                knob.setAttribute('aria-valuemax', input.max);
+
+                knobRegistry[targetId] = { knob, pointer, input };
+
+                let dragging = false, startY = 0, startVal = 0;
+
+                function begin(clientY) {
+                    dragging = true;
+                    startY = clientY;
+                    startVal = parseFloat(input.value);
+                    knob.classList.add('dragging');
+                }
+
+                function move(clientY, precise) {
+                    if (!dragging) return;
+                    let min = parseFloat(input.min), max = parseFloat(input.max);
+                    let step = parseFloat(input.step) || 1;
+                    let span = max - min;
+                    let sensitivity = precise ? 640 : 160; // px of drag for full sweep
+                    let deltaVal = ((startY - clientY) / sensitivity) * span;
+                    let newVal = startVal + deltaVal;
+                    newVal = roundToStep(newVal, step);
+                    newVal = Math.min(max, Math.max(min, newVal));
+                    if (newVal !== parseFloat(input.value)) {
+                        input.value = newVal;
+                        renderKnob(targetId);
+                        try { input.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+                    }
+                }
+
+                function end() {
+                    dragging = false;
+                    knob.classList.remove('dragging');
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    document.removeEventListener('touchmove', onTouchMove);
+                    document.removeEventListener('touchend', onTouchEnd);
+                }
+
+                function onMouseMove(e) { move(e.clientY, e.shiftKey); }
+                function onMouseUp() { end(); }
+                function onTouchMove(e) {
+                    if (e.touches && e.touches[0]) move(e.touches[0].clientY, false);
+                    e.preventDefault();
+                }
+                function onTouchEnd() { end(); }
+
+                knob.addEventListener('mousedown', e => {
+                    begin(e.clientY);
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                    e.preventDefault();
+                });
+                knob.addEventListener('touchstart', e => {
+                    if (e.touches && e.touches[0]) begin(e.touches[0].clientY);
+                    document.addEventListener('touchmove', onTouchMove, { passive: false });
+                    document.addEventListener('touchend', onTouchEnd);
+                }, { passive: true });
+
+                knob.addEventListener('keydown', e => {
+                    let step = parseFloat(input.step) || 1;
+                    let min = parseFloat(input.min), max = parseFloat(input.max);
+                    let v = parseFloat(input.value);
+                    let handled = true;
+                    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') v = Math.min(max, v + step);
+                    else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') v = Math.max(min, v - step);
+                    else handled = false;
+                    if (handled) {
+                        e.preventDefault();
+                        v = roundToStep(v, step);
+                        input.value = v;
+                        renderKnob(targetId);
+                        try { input.dispatchEvent(new Event('input', { bubbles: true })); } catch (err) {}
+                    }
+                });
+
+                renderKnob(targetId);
+            });
+        }
+
+        // Floating panel show/hide - purely cosmetic, the canvas is full-bleed
+        // underneath so nothing needs to resize or recompute when this toggles.
+        function togglePanel() {
+            let panel = document.getElementById('sidebarPanel');
+            let tab = document.getElementById('panelTab');
+            let collapsing = !panel.classList.contains('collapsed');
+            panel.classList.toggle('collapsed', collapsing);
+            tab.classList.toggle('showing', collapsing);
+        }
+
+        // Drag the whole panel by its header, like a floating plugin window.
+        // On first drag we freeze its current on-screen box into explicit
+        // left/top/height inline styles (breaking the initial top+left+bottom
+        // CSS anchoring), then just track the pointer from there.
+        function initDraggablePanel() {
+            let panel = document.getElementById('sidebarPanel');
+            let handle = panel.querySelector('.panel-head');
+            let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+            function begin(clientX, clientY) {
+                let rect = panel.getBoundingClientRect();
+                panel.style.height = rect.height + 'px';
+                panel.style.left = rect.left + 'px';
+                panel.style.top = rect.top + 'px';
+                panel.style.right = 'auto';
+                panel.style.bottom = 'auto';
+                startX = clientX;
+                startY = clientY;
+                startLeft = rect.left;
+                startTop = rect.top;
+                dragging = true;
+                panel.classList.add('dragging-panel');
+            }
+
+            function move(clientX, clientY) {
+                if (!dragging) return;
+                const margin = 8;
+                let newLeft = startLeft + (clientX - startX);
+                let newTop = startTop + (clientY - startY);
+                let maxLeft = Math.max(margin, window.innerWidth - panel.offsetWidth - margin);
+                let maxTop = Math.max(margin, window.innerHeight - panel.offsetHeight - margin);
+                newLeft = Math.min(Math.max(margin, newLeft), maxLeft);
+                newTop = Math.min(Math.max(margin, newTop), maxTop);
+                panel.style.left = newLeft + 'px';
+                panel.style.top = newTop + 'px';
+            }
+
+            function end() {
+                dragging = false;
+                panel.classList.remove('dragging-panel');
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend', onTouchEnd);
+            }
+
+            function onMouseMove(e) { move(e.clientX, e.clientY); }
+            function onMouseUp() { end(); }
+            function onTouchMove(e) {
+                if (e.touches && e.touches[0]) move(e.touches[0].clientX, e.touches[0].clientY);
+                e.preventDefault();
+            }
+            function onTouchEnd() { end(); }
+
+            handle.addEventListener('mousedown', e => {
+                if (e.target.closest('.panel-close')) return;
+                begin(e.clientX, e.clientY);
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+                e.preventDefault();
+            });
+
+            handle.addEventListener('touchstart', e => {
+                if (e.target.closest('.panel-close')) return;
+                if (e.touches && e.touches[0]) begin(e.touches[0].clientX, e.touches[0].clientY);
+                document.addEventListener('touchmove', onTouchMove, { passive: false });
+                document.addEventListener('touchend', onTouchEnd);
+            }, { passive: true });
+        }
+
+        function updateParam(paramName, value) {
+            params[paramName] = parseFloat(value);
+            document.getElementById(paramName + '-value').textContent = value;
+            renderKnob(paramName);
+
+            let lightweight = ['colorCycleHue', 'glowIntensity', 'glowSteps'];
+            if (lightweight.includes(paramName)) {
+                renderComposition();
+            } else {
+                initializeSystem();
+            }
+            compositeStatic();
+        }
+
+        function renderPaletteGrid() {
+            let grid = document.getElementById('paletteGrid');
+            grid.innerHTML = params.colorPalette.map((hex, i) =>
+                `<div class="swatch" style="background:${hex};"><input type="color" value="${hex}" oninput="updatePaletteColor(${i}, this.value)"></div>`
+            ).join('');
+        }
+
+        function updatePaletteColor(idx, value) {
+            params.colorPalette[idx] = value;
+            let swatches = document.querySelectorAll('#paletteGrid .swatch');
+            if (swatches[idx]) swatches[idx].style.background = value;
+            initializeSystem();
+            compositeStatic();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SEED CONTROL FUNCTIONS - ALWAYS KEEP THESE
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function updateSeedDisplay() {
+            document.getElementById('seed-input').value = params.seed;
+        }
+
+        function updateSeed() {
+            let input = document.getElementById('seed-input');
+            let newSeed = parseInt(input.value);
+            if (newSeed && newSeed > 0) {
+                params.seed = newSeed;
+                initializeSystem();
+                compositeStatic();
+            } else {
+                // Reset to current seed if invalid
+                updateSeedDisplay();
+            }
+        }
+
+        function previousSeed() {
+            params.seed = Math.max(1, params.seed - 1);
+            updateSeedDisplay();
+            initializeSystem();
+            compositeStatic();
+        }
+
+        function nextSeed() {
+            params.seed = params.seed + 1;
+            updateSeedDisplay();
+            initializeSystem();
+            compositeStatic();
+        }
+
+        function randomSeedAndUpdate() {
+            params.seed = Math.floor(Math.random() * 999999) + 1;
+            updateSeedDisplay();
+            initializeSystem();
+            compositeStatic();
+        }
+
+        function resetParameters() {
+            stopAllAnimations();
+            paramAnimSpeeds = {};
+
+            params = {...defaultParams, colorPalette: [...defaultParams.colorPalette]};
+
+            document.getElementById('formCount').value = params.formCount;
+            document.getElementById('formCount-value').textContent = params.formCount;
+            document.getElementById('maxRadius').value = params.maxRadius;
+            document.getElementById('maxRadius-value').textContent = params.maxRadius;
+            document.getElementById('overlap').value = params.overlap;
+            document.getElementById('overlap-value').textContent = params.overlap;
+            document.getElementById('ringDensity').value = params.ringDensity;
+            document.getElementById('ringDensity-value').textContent = params.ringDensity;
+            document.getElementById('nestProb').value = params.nestProb;
+            document.getElementById('nestProb-value').textContent = params.nestProb;
+            document.getElementById('filledAmount').value = params.filledAmount;
+            document.getElementById('filledAmount-value').textContent = params.filledAmount;
+            document.getElementById('gradientComplexity').value = params.gradientComplexity;
+            document.getElementById('gradientComplexity-value').textContent = params.gradientComplexity;
+            document.getElementById('ringSpacing').value = params.ringSpacing;
+            document.getElementById('ringSpacing-value').textContent = params.ringSpacing;
+            document.getElementById('spacingGrowth').value = params.spacingGrowth;
+            document.getElementById('spacingGrowth-value').textContent = params.spacingGrowth;
+            document.getElementById('glowChance').value = params.glowChance;
+            document.getElementById('glowChance-value').textContent = params.glowChance;
+            document.getElementById('glowIntensity').value = params.glowIntensity;
+            document.getElementById('glowIntensity-value').textContent = params.glowIntensity;
+            document.getElementById('glowSteps').value = params.glowSteps;
+            document.getElementById('glowSteps-value').textContent = params.glowSteps;
+
+            document.getElementById('bgColor').value = params.backgroundColor;
+            document.querySelector('.bg-swatch-row .swatch').style.background = params.backgroundColor;
+            document.getElementById('colorCycleHue').value = params.colorCycleHue;
+            document.getElementById('colorCycleHue-value').textContent = params.colorCycleHue;
+
+            renderPaletteGrid();
+
+            cycleParamIds.forEach(paramName => {
+                const [lo, hi] = defaultAnimRanges[paramName];
+                setDualRange(paramName, lo, hi);
+            });
+
+            document.getElementById('canvasPreset').value = 'fit';
+            computeCanvasSizeForPreset('fit');
+            resizeCanvas(params.canvasWidth, params.canvasHeight);
+            ensureBuffers();
+
+            updateSeedDisplay();
+            initializeSystem();
+            compositeStatic();
+            refreshAllKnobs();
+        }
+
+        // Initialize UI on load
+        window.addEventListener('load', function() {
+            updateSeedDisplay();
+            cycleParamIds.forEach(paramName => renderDualRangeFill(paramName));
+            initKnobs();
+            initDraggablePanel();
+            initMiniButtonIcons();
+            initPanelHoverClose();
+        });
+    </script>
 </body>
 </html>
