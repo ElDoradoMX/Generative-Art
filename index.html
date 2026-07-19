@@ -767,6 +767,19 @@
         }
 
         /* ─── Compact Palette Grid ──────────────────────────────────── */
+        .palette-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .palette-header-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--ink);
+        }
+
         .palette-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -1274,7 +1287,7 @@
                     <label>Background</label>
                 </div>
 
-                <div class="knob-grid" style="grid-template-columns: 88px; margin-bottom: 16px;">
+                <div class="knob-grid" style="margin-bottom: 16px;">
                 <div class="knob-card">
                     <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('colorCycleHue')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-colorCycleHue" onclick="startParamCycle('colorCycleHue')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-colorCycleHue" onclick="stopParamCycle('colorCycleHue')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
                     <div class="knob" data-target="colorCycleHue" tabindex="0">
@@ -1283,6 +1296,26 @@
                     <span class="knob-label">Cycle Colors</span>
                     <span class="value-display" id="colorCycleHue-value">0</span>
                     <input type="range" class="knob-native" id="colorCycleHue" min="0" max="360" step="1" value="0" oninput="updateParam('colorCycleHue', this.value)">
+                    
+                </div>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('paletteSaturation')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-paletteSaturation" onclick="startParamCycle('paletteSaturation')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-paletteSaturation" onclick="stopParamCycle('paletteSaturation')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="paletteSaturation" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Saturation</span>
+                    <span class="value-display" id="paletteSaturation-value">0</span>
+                    <input type="range" class="knob-native" id="paletteSaturation" min="-100" max="100" step="2" value="0" oninput="updateParam('paletteSaturation', this.value)">
+                    
+                </div>
+                <div class="knob-card">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('paletteBrightness')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-paletteBrightness" onclick="startParamCycle('paletteBrightness')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-paletteBrightness" onclick="stopParamCycle('paletteBrightness')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="paletteBrightness" tabindex="0">
+                        <div class="knob-dial"><div class="knob-pointer"></div></div>
+                    </div>
+                    <span class="knob-label">Brightness</span>
+                    <span class="value-display" id="paletteBrightness-value">0</span>
+                    <input type="range" class="knob-native" id="paletteBrightness" min="-100" max="100" step="2" value="0" oninput="updateParam('paletteBrightness', this.value)">
                     
                 </div>
                 </div>
@@ -1296,9 +1329,33 @@
                         </div>
                         <div class="dual-slider-labels"><span id="colorCycleHue-from-label">0</span><span id="colorCycleHue-to-label">360</span></div>
                                             <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="colorCycleHue-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('colorCycleHue', this.value)"><span class="value-display" id="colorCycleHue-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-paletteSaturation">
+                            <div class="cycle-detail-title">Saturation</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-paletteSaturation-range"></div>
+                            <input type="range" id="paletteSaturation-from" min="-100" max="100" step="2" value="-40" oninput="updateDualRange('paletteSaturation', this)">
+                            <input type="range" id="paletteSaturation-to" min="-100" max="100" step="2" value="40" oninput="updateDualRange('paletteSaturation', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="paletteSaturation-from-label">-40</span><span id="paletteSaturation-to-label">40</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="paletteSaturation-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('paletteSaturation', this.value)"><span class="value-display" id="paletteSaturation-speed-value">0.4</span></div>
+                    </div><div class="anim-range" id="anim-range-paletteBrightness">
+                            <div class="cycle-detail-title">Brightness</div>
+                        <div class="dual-slider">
+                            <div class="dual-slider-track"></div>
+                            <div class="dual-slider-range" id="dual-paletteBrightness-range"></div>
+                            <input type="range" id="paletteBrightness-from" min="-100" max="100" step="2" value="-25" oninput="updateDualRange('paletteBrightness', this)">
+                            <input type="range" id="paletteBrightness-to" min="-100" max="100" step="2" value="25" oninput="updateDualRange('paletteBrightness', this)">
+                        </div>
+                        <div class="dual-slider-labels"><span id="paletteBrightness-from-label">-25</span><span id="paletteBrightness-to-label">25</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="paletteBrightness-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('paletteBrightness', this.value)"><span class="value-display" id="paletteBrightness-speed-value">0.4</span></div>
                     </div>
                 </div>
 
+                <div class="palette-header">
+                    <span class="palette-header-label">Palette</span>
+                    <button class="anim-toggle dice-mini" onclick="randomizeWholePalette()" title="Randomize whole palette"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button>
+                </div>
                 <div class="palette-grid" id="paletteGrid"></div>
             </div>
 
@@ -1340,9 +1397,11 @@
             canvasPreset: 'fit',
             canvasWidth: 1200,
             canvasHeight: 1200,
+            paletteSaturation: 0,
+            paletteBrightness: 0,
             colorPalette: [
                 '#ff1e8c', '#c6f42d', '#0088c4', '#ff9fc9', '#5b2a8c', '#a4907c',
-                '#00e5c7', '#ff5b1f', '#b026ff', '#eaff00'
+                '#00e5c7', '#ff5b1f', '#b026ff', '#eaff00', '#00a878', '#ff4d6d'
             ]
         };
 
@@ -1358,7 +1417,7 @@
         // every active cycle so we only ever trigger one recompute per tick, even
         // if several parameters are cycling at once.
 
-        const lightweightAnimParams = ['glowIntensity', 'glowSteps', 'colorCycleHue']; // safe to re-render without full repack
+        const lightweightAnimParams = ['glowIntensity', 'glowSteps', 'colorCycleHue', 'paletteSaturation', 'paletteBrightness']; // safe to re-render without full repack
 
         let activeAnimations = {};   // paramName -> true
         let animStartTimes = {};     // paramName -> performance.now() at toggle-on
@@ -1385,13 +1444,14 @@
         // All parameters that can be cycled, with their default from/to range
         // (used by both the initial page load and "Reset").
         const cycleParamIds = ['formCount', 'maxRadius', 'overlap', 'ringDensity', 'nestProb',
-            'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity', 'glowSteps', 'colorCycleHue'];
+            'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity', 'glowSteps', 'colorCycleHue', 'paletteSaturation', 'paletteBrightness'];
 
         const defaultAnimRanges = {
             formCount: [100, 220], maxRadius: [210, 250], overlap: [0.1, 0.45],
             ringDensity: [0.8, 1.8], nestProb: [0.1, 0.6], filledAmount: [0.15, 0.7],
             gradientComplexity: [2, 5], ringSpacing: [0.6, 1.8], spacingGrowth: [0.4, 0.85],
-            glowChance: [0.05, 0.6], glowIntensity: [2, 16], glowSteps: [2, 6], colorCycleHue: [0, 360]
+            glowChance: [0.05, 0.6], glowIntensity: [2, 16], glowSteps: [2, 6], colorCycleHue: [0, 360],
+            paletteSaturation: [-40, 40], paletteBrightness: [-25, 25]
         };
 
         // Keeps the two handles from crossing, updates the little numeric
@@ -1498,6 +1558,25 @@
             v = Math.min(max, Math.max(min, v));
             slider.value = v;
             updateParam(paramName, v);
+        }
+
+        // Micro randomizer for the whole palette: rerolls every swatch to a
+        // fresh, vivid random color (biased toward mid-high saturation and
+        // lightness so results stay punchy rather than muddy or washed out).
+        function randomizeWholePalette() {
+            const count = params.colorPalette.length;
+            const newPalette = [];
+            for (let i = 0; i < count; i++) {
+                let h = Math.random();
+                let s = 0.55 + Math.random() * 0.35;
+                let l = 0.45 + Math.random() * 0.2;
+                let rgb = hslToRgb(h, s, l);
+                newPalette.push(rgbToHexStr(rgb.r, rgb.g, rgb.b));
+            }
+            params.colorPalette = newPalette;
+            renderPaletteGrid();
+            initializeSystem();
+            compositeStatic();
         }
 
         // Only one knob's range/speed panel is ever open at a time (an
@@ -2129,17 +2208,22 @@
             }
             return { r: r * 255, g: g * 255, b: b * 255 };
         }
-        function rotateHueHex(hex, degrees) {
+        function adjustPaletteHex(hex, hueDeg, satAdjust, lightAdjust) {
             let { r, g, b } = hexToRgb(hex);
             let { h, s, l } = rgbToHsl(r, g, b);
-            h = ((h + degrees / 360) % 1 + 1) % 1;
+            h = ((h + hueDeg / 360) % 1 + 1) % 1;
+            s = Math.min(1, Math.max(0, s + satAdjust / 100));
+            l = Math.min(1, Math.max(0, l + lightAdjust / 100));
             let rgb = hslToRgb(h, s, l);
             return rgbToHexStr(rgb.r, rgb.g, rgb.b);
         }
         function computeRenderPalette() {
             let shift = ((params.colorCycleHue % 360) + 360) % 360;
-            renderPalette = shift === 0 ? params.colorPalette.slice()
-                : params.colorPalette.map(hex => rotateHueHex(hex, shift));
+            let sat = params.paletteSaturation || 0;
+            let light = params.paletteBrightness || 0;
+            renderPalette = (shift === 0 && sat === 0 && light === 0)
+                ? params.colorPalette.slice()
+                : params.colorPalette.map(hex => adjustPaletteHex(hex, shift, sat, light));
         }
 
         function downloadArt() {
@@ -2501,7 +2585,7 @@
             document.getElementById(paramName + '-value').textContent = value;
             renderKnob(paramName);
 
-            let lightweight = ['colorCycleHue', 'glowIntensity', 'glowSteps'];
+            let lightweight = ['colorCycleHue', 'glowIntensity', 'glowSteps', 'paletteSaturation', 'paletteBrightness'];
             if (lightweight.includes(paramName)) {
                 renderComposition();
             } else {
@@ -2602,6 +2686,10 @@
             document.querySelector('.bg-swatch-row .swatch').style.background = params.backgroundColor;
             document.getElementById('colorCycleHue').value = params.colorCycleHue;
             document.getElementById('colorCycleHue-value').textContent = params.colorCycleHue;
+            document.getElementById('paletteSaturation').value = params.paletteSaturation;
+            document.getElementById('paletteSaturation-value').textContent = params.paletteSaturation;
+            document.getElementById('paletteBrightness').value = params.paletteBrightness;
+            document.getElementById('paletteBrightness-value').textContent = params.paletteBrightness;
 
             renderPaletteGrid();
 
