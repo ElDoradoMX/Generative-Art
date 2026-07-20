@@ -1281,8 +1281,8 @@
                 <h3>Colors</h3>
 
                 <div class="bg-swatch-row">
-                    <div class="swatch" style="background:#ffffff;">
-                        <input type="color" id="bgColor" value="#ffffff" onchange="updateBgColor(this.value)">
+                    <div class="swatch" style="background:#fafafa;">
+                        <input type="color" id="bgColor" value="#fafafa" oninput="updateBgColor(this.value)">
                     </div>
                     <label>Background</label>
                 </div>
@@ -1299,13 +1299,13 @@
                     
                 </div>
                 <div class="knob-card">
-                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('paletteSaturation')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-paletteSaturation" onclick="startParamCycle('paletteSaturation')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-paletteSaturation" onclick="stopParamCycle('paletteSaturation')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
-                    <div class="knob" data-target="paletteSaturation" tabindex="0">
+                    <div class="knob-card-btns"><button class="anim-toggle dice-mini" onclick="randomizeParamValue('gradientProbability')" title="Randomize value"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button class="anim-toggle" id="anim-btn-gradientProbability" onclick="startParamCycle('gradientProbability')" title="Start cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M2.6 1.3v7.4a.6.6 0 0 0 .93.5l5.7-3.7a.6.6 0 0 0 0-1l-5.7-3.7a.6.6 0 0 0-.93.5z"/></svg></button><button class="anim-toggle disabled" id="anim-stop-gradientProbability" onclick="stopParamCycle('gradientProbability')" title="Stop cycling"><svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><rect x="2.2" y="2.2" width="5.6" height="5.6" rx="1.1"/></svg></button></div>
+                    <div class="knob" data-target="gradientProbability" tabindex="0">
                         <div class="knob-dial"><div class="knob-pointer"></div></div>
                     </div>
-                    <span class="knob-label">Saturation</span>
-                    <span class="value-display" id="paletteSaturation-value">0</span>
-                    <input type="range" class="knob-native" id="paletteSaturation" min="-100" max="100" step="2" value="0" oninput="updateParam('paletteSaturation', this.value)">
+                    <span class="knob-label">Gradient Probability</span>
+                    <span class="value-display" id="gradientProbability-value">20</span>
+                    <input type="range" class="knob-native" id="gradientProbability" min="0" max="100" step="2" value="20" oninput="updateParam('gradientProbability', this.value)">
                     
                 </div>
                 <div class="knob-card">
@@ -1329,16 +1329,16 @@
                         </div>
                         <div class="dual-slider-labels"><span id="colorCycleHue-from-label">0</span><span id="colorCycleHue-to-label">360</span></div>
                                             <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="colorCycleHue-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('colorCycleHue', this.value)"><span class="value-display" id="colorCycleHue-speed-value">0.4</span></div>
-                    </div><div class="anim-range" id="anim-range-paletteSaturation">
-                            <div class="cycle-detail-title">Saturation</div>
+                    </div><div class="anim-range" id="anim-range-gradientProbability">
+                            <div class="cycle-detail-title">Gradient Probability</div>
                         <div class="dual-slider">
                             <div class="dual-slider-track"></div>
-                            <div class="dual-slider-range" id="dual-paletteSaturation-range"></div>
-                            <input type="range" id="paletteSaturation-from" min="-100" max="100" step="2" value="-40" oninput="updateDualRange('paletteSaturation', this)">
-                            <input type="range" id="paletteSaturation-to" min="-100" max="100" step="2" value="40" oninput="updateDualRange('paletteSaturation', this)">
+                            <div class="dual-slider-range" id="dual-gradientProbability-range"></div>
+                            <input type="range" id="gradientProbability-from" min="0" max="100" step="2" value="5" oninput="updateDualRange('gradientProbability', this)">
+                            <input type="range" id="gradientProbability-to" min="0" max="100" step="2" value="50" oninput="updateDualRange('gradientProbability', this)">
                         </div>
-                        <div class="dual-slider-labels"><span id="paletteSaturation-from-label">-40</span><span id="paletteSaturation-to-label">40</span></div>
-                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="paletteSaturation-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('paletteSaturation', this.value)"><span class="value-display" id="paletteSaturation-speed-value">0.4</span></div>
+                        <div class="dual-slider-labels"><span id="gradientProbability-from-label">5</span><span id="gradientProbability-to-label">50</span></div>
+                                            <div class="anim-speed-row"><span class="anim-speed-label">Speed</span><input type="range" id="gradientProbability-speed" min="0.05" max="2" step="0.05" value="0.4" oninput="updateParamSpeed('gradientProbability', this.value)"><span class="value-display" id="gradientProbability-speed-value">0.4</span></div>
                     </div><div class="anim-range" id="anim-range-paletteBrightness">
                             <div class="cycle-detail-title">Brightness</div>
                         <div class="dual-slider">
@@ -1393,15 +1393,15 @@
             glowChance: 0.15,
             glowIntensity: 6,
             glowSteps: 3,
-            backgroundColor: '#ffffff',
+            backgroundColor: '#fafafa',
             canvasPreset: 'fit',
             canvasWidth: 1200,
             canvasHeight: 1200,
-            paletteSaturation: 0,
+            gradientProbability: 20,
             paletteBrightness: 0,
             colorPalette: [
-                '#ff1e8c', '#c6f42d', '#0088c4', '#ff9fc9', '#5b2a8c', '#a4907c',
-                '#00e5c7', '#ff5b1f', '#b026ff', '#eaff00', '#00a878', '#ff4d6d'
+                '#ff4d8f', '#ffb703', '#06d6a0', '#7b2cbf', '#ff7b54', '#118ab2',
+                '#f72585', '#ffd60a', '#3a86ff', '#c77dff', '#2ec4b6', '#ef476f'
             ]
         };
 
@@ -1417,7 +1417,7 @@
         // every active cycle so we only ever trigger one recompute per tick, even
         // if several parameters are cycling at once.
 
-        const lightweightAnimParams = ['glowIntensity', 'glowSteps', 'colorCycleHue', 'paletteSaturation', 'paletteBrightness']; // safe to re-render without full repack
+        const lightweightAnimParams = ['glowIntensity', 'glowSteps', 'colorCycleHue', 'paletteBrightness']; // safe to re-render without full repack
 
         let activeAnimations = {};   // paramName -> true
         let animStartTimes = {};     // paramName -> performance.now() at toggle-on
@@ -1444,14 +1444,14 @@
         // All parameters that can be cycled, with their default from/to range
         // (used by both the initial page load and "Reset").
         const cycleParamIds = ['formCount', 'maxRadius', 'overlap', 'ringDensity', 'nestProb',
-            'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity', 'glowSteps', 'colorCycleHue', 'paletteSaturation', 'paletteBrightness'];
+            'filledAmount', 'gradientComplexity', 'ringSpacing', 'spacingGrowth', 'glowChance', 'glowIntensity', 'glowSteps', 'colorCycleHue', 'gradientProbability', 'paletteBrightness'];
 
         const defaultAnimRanges = {
             formCount: [100, 220], maxRadius: [210, 250], overlap: [0.1, 0.45],
             ringDensity: [0.8, 1.8], nestProb: [0.1, 0.6], filledAmount: [0.15, 0.7],
             gradientComplexity: [2, 5], ringSpacing: [0.6, 1.8], spacingGrowth: [0.4, 0.85],
             glowChance: [0.05, 0.6], glowIntensity: [2, 16], glowSteps: [2, 6], colorCycleHue: [0, 360],
-            paletteSaturation: [-40, 40], paletteBrightness: [-25, 25]
+            gradientProbability: [5, 50], paletteBrightness: [-25, 25]
         };
 
         // Keeps the two handles from crossing, updates the little numeric
@@ -1563,13 +1563,41 @@
         // Micro randomizer for the whole palette: rerolls every swatch to a
         // fresh, vivid random color (biased toward mid-high saturation and
         // lightness so results stay punchy rather than muddy or washed out).
+        // Micro randomizer for the whole palette: each click picks one of
+        // several color-harmony schemes (analogous, complementary, split,
+        // triadic, tetradic, monochromatic, or fully freeform hues) around a
+        // fresh random base hue, then fills every swatch with its own
+        // saturation/lightness so the result has real depth - some punchy,
+        // some pastel, some dark - rather than a flat wash of samey colors.
         function randomizeWholePalette() {
             const count = params.colorPalette.length;
+            const schemes = ['analogous', 'complementary', 'splitComplementary', 'triadic', 'tetradic', 'monochromatic', 'freeform'];
+            const scheme = schemes[Math.floor(Math.random() * schemes.length)];
+            const baseHue = Math.random();
+
+            let hueAnchors;
+            switch (scheme) {
+                case 'analogous': hueAnchors = [0, 1 / 12, -1 / 12, 2 / 12, -2 / 12]; break;
+                case 'complementary': hueAnchors = [0, 0.5]; break;
+                case 'splitComplementary': hueAnchors = [0, 0.5 - 1 / 12, 0.5 + 1 / 12]; break;
+                case 'triadic': hueAnchors = [0, 1 / 3, 2 / 3]; break;
+                case 'tetradic': hueAnchors = [0, 0.25, 0.5, 0.75]; break;
+                case 'monochromatic': hueAnchors = [0]; break;
+                default: hueAnchors = null; // freeform - every swatch gets an independent random hue
+            }
+
             const newPalette = [];
             for (let i = 0; i < count; i++) {
-                let h = Math.random();
-                let s = 0.55 + Math.random() * 0.35;
-                let l = 0.45 + Math.random() * 0.2;
+                let h;
+                if (hueAnchors) {
+                    let anchor = hueAnchors[i % hueAnchors.length];
+                    let jitter = (Math.random() - 0.5) * (scheme === 'monochromatic' ? 0.025 : 0.045);
+                    h = ((baseHue + anchor + jitter) % 1 + 1) % 1;
+                } else {
+                    h = Math.random();
+                }
+                let s = 0.4 + Math.random() * 0.55;
+                let l = 0.35 + Math.random() * 0.4;
                 let rgb = hslToRgb(h, s, l);
                 newPalette.push(rgbToHexStr(rgb.r, rgb.g, rgb.b));
             }
@@ -2020,8 +2048,16 @@
 
                     let roll = rnd();
                     let mode = 'outline';
-                    if (roll < f.filledBias * 0.6) mode = 'filled';
-                    else if (roll < f.filledBias) mode = 'gradient';
+                    let gradP = params.gradientProbability / 100;
+                    if (roll < gradP) {
+                        mode = 'gradient';
+                    } else {
+                        // renormalize the leftover roll space so filledBias still
+                        // means "this fraction of non-gradient rings are filled"
+                        // regardless of how big a slice gradient is taking
+                        let rollRemaining = (roll - gradP) / (1 - gradP);
+                        if (rollRemaining < f.filledBias) mode = 'filled';
+                    }
 
                     let weight, alpha;
                     if (mode === 'outline') {
@@ -2208,22 +2244,20 @@
             }
             return { r: r * 255, g: g * 255, b: b * 255 };
         }
-        function adjustPaletteHex(hex, hueDeg, satAdjust, lightAdjust) {
+        function adjustPaletteHex(hex, hueDeg, lightAdjust) {
             let { r, g, b } = hexToRgb(hex);
             let { h, s, l } = rgbToHsl(r, g, b);
             h = ((h + hueDeg / 360) % 1 + 1) % 1;
-            s = Math.min(1, Math.max(0, s + satAdjust / 100));
             l = Math.min(1, Math.max(0, l + lightAdjust / 100));
             let rgb = hslToRgb(h, s, l);
             return rgbToHexStr(rgb.r, rgb.g, rgb.b);
         }
         function computeRenderPalette() {
             let shift = ((params.colorCycleHue % 360) + 360) % 360;
-            let sat = params.paletteSaturation || 0;
             let light = params.paletteBrightness || 0;
-            renderPalette = (shift === 0 && sat === 0 && light === 0)
+            renderPalette = (shift === 0 && light === 0)
                 ? params.colorPalette.slice()
-                : params.colorPalette.map(hex => adjustPaletteHex(hex, shift, sat, light));
+                : params.colorPalette.map(hex => adjustPaletteHex(hex, shift, light));
         }
 
         function downloadArt() {
@@ -2585,7 +2619,7 @@
             document.getElementById(paramName + '-value').textContent = value;
             renderKnob(paramName);
 
-            let lightweight = ['colorCycleHue', 'glowIntensity', 'glowSteps', 'paletteSaturation', 'paletteBrightness'];
+            let lightweight = ['colorCycleHue', 'glowIntensity', 'glowSteps', 'paletteBrightness'];
             if (lightweight.includes(paramName)) {
                 renderComposition();
             } else {
@@ -2686,8 +2720,8 @@
             document.querySelector('.bg-swatch-row .swatch').style.background = params.backgroundColor;
             document.getElementById('colorCycleHue').value = params.colorCycleHue;
             document.getElementById('colorCycleHue-value').textContent = params.colorCycleHue;
-            document.getElementById('paletteSaturation').value = params.paletteSaturation;
-            document.getElementById('paletteSaturation-value').textContent = params.paletteSaturation;
+            document.getElementById('gradientProbability').value = params.gradientProbability;
+            document.getElementById('gradientProbability-value').textContent = params.gradientProbability;
             document.getElementById('paletteBrightness').value = params.paletteBrightness;
             document.getElementById('paletteBrightness-value').textContent = params.paletteBrightness;
 
